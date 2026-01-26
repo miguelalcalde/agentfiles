@@ -6,6 +6,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_URL="https://github.com/miguelalcalde/ralphie"
 
 # Colors
 RED='\033[0;31m'
@@ -29,6 +30,8 @@ usage() {
     echo "  install     Install symlinks (default)"
     echo "  status      Show current installation status"
     echo "  unlink      Remove symlinks"
+    echo "  update      Pull latest changes from git"
+    echo "  validate    Check repo structure is valid"
     echo ""
     echo "Options:"
     echo "  --global    Install to home directory (~/.claude, ~/.cursor)"
@@ -46,6 +49,84 @@ usage() {
     echo "  ./setup.sh --dry-run            # Preview only"
     echo "  ./setup.sh status               # Show what's installed"
     echo "  ./setup.sh unlink --global      # Remove global symlinks"
+    echo "  ./setup.sh update               # Pull latest changes"
+    echo "  ./setup.sh validate             # Check repo structure"
+}
+
+# Validate repo structure
+validate_repo() {
+    local valid=true
+    local required_dirs=("agents" "commands" "skills")
+    
+    echo -e "${CYAN}Validating repo structure...${NC}"
+    echo ""
+    
+    for dir in "${required_dirs[@]}"; do
+        if [ -d "$SCRIPT_DIR/$dir" ]; then
+            local count=$(find "$SCRIPT_DIR/$dir" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+            echo -e "  ${GREEN}✓${NC} $dir/ ${GRAY}($count files)${NC}"
+        else
+            echo -e "  ${RED}✗${NC} $dir/ ${RED}(missing)${NC}"
+            valid=false
+        fi
+    done
+    
+    # Check for git repo
+    echo ""
+    if [ -d "$SCRIPT_DIR/.git" ]; then
+        local branch=$(cd "$SCRIPT_DIR" && git branch --show-current 2>/dev/null || echo "unknown")
+        local commit=$(cd "$SCRIPT_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        echo -e "  ${GREEN}✓${NC} Git repo ${GRAY}($branch @ $commit)${NC}"
+    else
+        echo -e "  ${YELLOW}!${NC} Not a git repo ${GRAY}(updates won't work)${NC}"
+    fi
+    
+    echo ""
+    if [ "$valid" = true ]; then
+        echo -e "${GREEN}Repo structure is valid.${NC}"
+        return 0
+    else
+        echo -e "${RED}Repo structure is invalid. Some directories are missing.${NC}"
+        return 1
+    fi
+}
+
+# Update from git
+update_repo() {
+    echo -e "${CYAN}Updating from git...${NC}"
+    echo ""
+    
+    if [ ! -d "$SCRIPT_DIR/.git" ]; then
+        echo -e "${RED}Error: Not a git repository.${NC}"
+        echo "Clone the repo first: git clone $REPO_URL ~/.agentfiles"
+        return 1
+    fi
+    
+    cd "$SCRIPT_DIR"
+    
+    # Show current state
+    local before=$(git rev-parse --short HEAD)
+    echo -e "  Current: ${GRAY}$before${NC}"
+    
+    # Pull changes
+    if git pull --ff-only; then
+        local after=$(git rev-parse --short HEAD)
+        if [ "$before" = "$after" ]; then
+            echo -e "  ${GREEN}Already up to date.${NC}"
+        else
+            echo ""
+            echo -e "  ${GREEN}Updated: $before → $after${NC}"
+            echo ""
+            echo "  Recent changes:"
+            git log --oneline "$before..$after" | head -5 | while read line; do
+                echo -e "    ${GRAY}$line${NC}"
+            done
+        fi
+    else
+        echo -e "  ${RED}Update failed. You may have local changes.${NC}"
+        echo "  Try: cd $SCRIPT_DIR && git status"
+        return 1
+    fi
 }
 
 # Check if path exists and what type
@@ -149,21 +230,22 @@ show_status() {
     local target="$1"
     local expected_source="$2"
     local path_type=$(check_path "$target")
+    local name=$(basename "$target")
     
     case "$path_type" in
         none)
-            echo -e "  ${GRAY}○${NC} $target ${GRAY}(not installed)${NC}"
+            echo -e "  ${GRAY}○${NC} $name ${GRAY}(not installed)${NC}"
             ;;
         symlink)
             local actual=$(readlink "$target")
             if [ "$actual" = "$expected_source" ]; then
-                echo -e "  ${GREEN}●${NC} $target ${GREEN}✓${NC}"
+                echo -e "  ${GREEN}●${NC} $name ${GRAY}→ $actual${NC}"
             else
-                echo -e "  ${YELLOW}●${NC} $target ${GRAY}-> $actual${NC}"
+                echo -e "  ${YELLOW}●${NC} $name ${GRAY}→ $actual ${YELLOW}(unexpected)${NC}"
             fi
             ;;
         *)
-            echo -e "  ${YELLOW}■${NC} $target ${GRAY}($path_type, not symlink)${NC}"
+            echo -e "  ${YELLOW}■${NC} $name ${GRAY}($path_type, not symlink)${NC}"
             ;;
     esac
 }
@@ -218,7 +300,7 @@ status_tool() {
 COMMAND="install"
 while [ $# -gt 0 ]; do
     case "$1" in
-        install|status|unlink)
+        install|status|unlink|update|validate)
             COMMAND="$1"
             ;;
         --global|-g)
@@ -276,7 +358,7 @@ if [ -z "$BASE_DIR" ] && [ "$COMMAND" != "status" ]; then
     esac
 fi
 
-# For status, check both locations
+# Handle standalone commands
 if [ "$COMMAND" = "status" ]; then
     echo -e "${CYAN}Agentfiles Status${NC}"
     echo ""
@@ -292,6 +374,16 @@ if [ "$COMMAND" = "status" ]; then
         status_tool "cursor" "$(pwd)"
     fi
     exit 0
+fi
+
+if [ "$COMMAND" = "update" ]; then
+    update_repo
+    exit $?
+fi
+
+if [ "$COMMAND" = "validate" ]; then
+    validate_repo
+    exit $?
 fi
 
 if [ -z "$TOOLS" ]; then
@@ -318,6 +410,15 @@ fi
 # Execute command
 case "$COMMAND" in
     install)
+        # Validate repo structure first
+        for dir in "agents" "commands" "skills"; do
+            if [ ! -d "$SCRIPT_DIR/$dir" ]; then
+                echo -e "${RED}Error: Required directory '$dir' not found.${NC}"
+                echo "Run './setup.sh validate' to check repo structure."
+                exit 1
+            fi
+        done
+        
         [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run mode - no changes will be made${NC}\n"
         
         if [ "$TOOLS" = "claude" ] || [ "$TOOLS" = "all" ]; then
@@ -327,7 +428,13 @@ case "$COMMAND" in
             setup_tool "cursor" "$BASE_DIR"
         fi
         
-        [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run complete. No changes were made.${NC}" || echo -e "${GREEN}Done!${NC}"
+        if [ "$DRY_RUN" = true ]; then
+            echo -e "${BLUE}Dry run complete. No changes were made.${NC}"
+        else
+            echo -e "${GREEN}Done!${NC}"
+            echo ""
+            echo -e "${GRAY}Tip: Run './setup.sh update' to get the latest changes.${NC}"
+        fi
         ;;
     unlink)
         [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run mode - no changes will be made${NC}\n"
