@@ -332,8 +332,23 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# Check if running interactively
+is_interactive() {
+    [ -t 0 ] && [ -t 1 ]
+}
+
 # Interactive prompts if needed
 if [ -z "$BASE_DIR" ] && [ "$COMMAND" != "status" ]; then
+    if ! is_interactive; then
+        echo -e "${RED}Error: No install location specified.${NC}"
+        echo ""
+        echo "When running non-interactively, you must specify a location:"
+        echo "  ./setup.sh --global all    # Install to home directory"
+        echo "  ./setup.sh --local all     # Install to current directory"
+        echo ""
+        exit 1
+    fi
+    
     echo -e "${CYAN}Agentfiles Setup${NC}"
     echo ""
     echo "Where do you want to $COMMAND?"
@@ -387,6 +402,17 @@ if [ "$COMMAND" = "validate" ]; then
 fi
 
 if [ -z "$TOOLS" ]; then
+    if ! is_interactive; then
+        echo -e "${RED}Error: No tools specified.${NC}"
+        echo ""
+        echo "When running non-interactively, you must specify tools:"
+        echo "  ./setup.sh --global all      # Both Claude Code and Cursor"
+        echo "  ./setup.sh --global claude   # Claude Code only"
+        echo "  ./setup.sh --global cursor   # Cursor only"
+        echo ""
+        exit 1
+    fi
+    
     echo "Which tools?"
     echo ""
     echo "  1) Claude Code only"

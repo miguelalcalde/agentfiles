@@ -2,6 +2,9 @@
 
 # Remote installer for Agentfiles
 # Usage: curl -fsSL https://raw.githubusercontent.com/miguelalcalde/ralphie/main/install.sh | bash
+#
+# This script installs globally to ~/.agentfiles and sets up for all tools.
+# For local (per-project) install, clone the repo and run: ./setup.sh --local
 
 set -e
 
@@ -13,10 +16,13 @@ CYAN='\033[0;36m'
 GRAY='\033[0;90m'
 NC='\033[0m'
 
-REPO_URL="https://github.com/miguelalcalde/ralphie.git"
+REPO_URL="https://github.com/miguelalcalde/agentfiles.git"
 INSTALL_DIR="$HOME/.agentfiles"
 
 echo -e "${CYAN}Agentfiles Installer${NC}"
+echo ""
+echo -e "This will install agentfiles globally to ${GRAY}$INSTALL_DIR${NC}"
+echo -e "For per-project install, clone the repo and run: ${GRAY}./setup.sh --local${NC}"
 echo ""
 
 # Check for git
@@ -27,39 +33,41 @@ fi
 
 # Check if already installed
 if [ -d "$INSTALL_DIR" ]; then
-    echo -e "${YELLOW}Agentfiles already installed at $INSTALL_DIR${NC}"
+    echo -e "${YELLOW}Existing installation found.${NC} Updating..."
     echo ""
-    read -p "Update existing installation? [Y/n]: " update_choice
-    if [ "$update_choice" = "n" ] || [ "$update_choice" = "N" ]; then
-        echo "Aborted."
-        exit 0
-    fi
-    
-    echo ""
-    echo -e "Updating..."
     cd "$INSTALL_DIR"
-    git pull --ff-only
-    echo ""
-    echo -e "${GREEN}Updated!${NC}"
+    
+    before=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    if git pull --ff-only; then
+        after=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        if [ "$before" = "$after" ]; then
+            echo -e "${GREEN}Already up to date.${NC}"
+        else
+            echo -e "${GREEN}Updated: $before → $after${NC}"
+        fi
+    else
+        echo -e "${YELLOW}Update failed (you may have local changes).${NC}"
+    fi
 else
-    echo -e "Cloning to $INSTALL_DIR..."
-    git clone "$REPO_URL" "$INSTALL_DIR"
-    echo ""
-    echo -e "${GREEN}Cloned!${NC}"
+    echo -e "Cloning..."
+    git clone --quiet "$REPO_URL" "$INSTALL_DIR"
+    echo -e "${GREEN}Cloned to $INSTALL_DIR${NC}"
 fi
 
 echo ""
 
-# Run setup
-echo -e "Running setup..."
-echo ""
+# Run setup non-interactively (global, all tools)
+echo -e "Setting up symlinks..."
 cd "$INSTALL_DIR"
-./setup.sh
+./setup.sh --global all
 
 echo ""
 echo -e "${GREEN}Installation complete!${NC}"
 echo ""
-echo "Commands:"
-echo -e "  ${GRAY}cd $INSTALL_DIR && ./setup.sh status${NC}    # Check status"
-echo -e "  ${GRAY}cd $INSTALL_DIR && ./setup.sh update${NC}    # Update"
-echo -e "  ${GRAY}cd $INSTALL_DIR && ./setup.sh unlink${NC}    # Uninstall"
+echo "Next steps:"
+echo -e "  ${GRAY}./setup.sh status${NC}              # Check what's installed"
+echo -e "  ${GRAY}./setup.sh update${NC}              # Pull latest changes"
+echo -e "  ${GRAY}./setup.sh --local all${NC}         # Install to current project"
+echo -e "  ${GRAY}./setup.sh unlink --global${NC}     # Remove global install"
+echo ""
+echo -e "Run commands from: ${GRAY}cd $INSTALL_DIR${NC}"
