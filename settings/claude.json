@@ -1,0 +1,27 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write",
+      "Edit",
+      "Bash(git status)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "NotebookEdit",
+      "WebFetch",
+      "TodoWrite",
+      "WebSearch",
+      "Skill",
+      "MCPSearch"
+    ],
+    "deny": ["Bash(git push --force*)", "Bash(git push -f*)", "Bash(rm -rf *)"]
+  }
+}
