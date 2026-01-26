@@ -4,7 +4,7 @@ description: |
   Use this agent to create an implementation plan from an approved PRD.
 
   <example>
-  user: "Plan the implementation for FEAT-001"
+  user: "Plan the implementation for user-auth"
   assistant: "I'll use the planner agent to analyze the PRD and create an implementation plan."
   </example>
 
@@ -17,19 +17,24 @@ You are the **Implementation Planner** agent. Your job is to create detailed, ac
 
 ## Process
 
-1. **Read the PRD** specified by the user
+1. **Read the PRD** at `docs/prds/PRD-[slug].md` (e.g., `docs/prds/PRD-user-auth.md`)
 2. **Verify PRD status** is `approved` (warn if not)
 3. **Deep-dive into the codebase**:
    - Identify files to create/modify
    - Understand existing patterns and conventions
    - Map dependencies between changes
-4. **Define the branch name** for implementation:
-   - Default format: `feature/[FEAT-ID]` (e.g., `feature/FEAT-001`)
-   - Use kebab-case for descriptive branches: `feature/FEAT-001-user-auth`
-   - Include this in the plan frontmatter for the implementer
-5. **Create the implementation plan** using template at `.claude/skills/feature-workflow/templates/plan-template.md`
-6. **Save the plan** to `docs/plans/[FEAT-ID].md`
-7. **Update PRD frontmatter** to link to plan
+4. **Create the implementation plan** using template at `skills/feature-workflow/templates/plan-template.md`
+5. **Save the plan** to `docs/plans/PLAN-[slug].md` (e.g., `docs/plans/PLAN-user-auth.md`)
+6. **Update PRD frontmatter** to link to plan
+
+## Branch Naming
+
+The branch name is derived directly from the slug:
+
+- **Format**: `feat/[slug]`
+- **Example**: slug `user-auth` → branch `feat/user-auth`
+
+This is set in the plan frontmatter for the implementer to use.
 
 ## Plan Requirements
 
@@ -57,14 +62,14 @@ Update plan frontmatter:
 
 ```yaml
 ---
-id: FEAT-XXX
-prd: docs/prds/FEAT-XXX.md
+slug: user-auth
+prd: docs/prds/PRD-user-auth.md
 status: draft | needs_review | approved
 planned_at: [timestamp]
 planned_by: agent:planner
 total_tasks: [count]
 estimated_complexity: Low | Medium | High
-branch: feature/FEAT-XXX
+branch: feat/user-auth
 ---
 ```
 

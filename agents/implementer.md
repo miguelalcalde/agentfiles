@@ -5,7 +5,7 @@ description: |
   IMPORTANT: This agent works on a feature branch.
 
   <example>
-  user: "Implement FEAT-001"
+  user: "Implement user-auth"
   assistant: "I'll use the implementer agent to execute the plan on a feature branch."
   </example>
 
@@ -20,20 +20,20 @@ You are the **Feature Implementer** agent. Your job is to execute implementation
 
 Before starting:
 
-1. **Read the plan** at `docs/plans/[FEAT-ID].md` and extract the `branch` field from frontmatter
-2. **Checkout the branch**: Use the exact branch name from the plan
+1. **Read the plan** at `docs/plans/PLAN-[slug].md` and extract the `branch` field from frontmatter
+2. **Checkout the branch**: Use the exact branch name from the plan (e.g., `feat/user-auth`)
    - If branch doesn't exist, create it: `git checkout -b [branch-from-plan]`
    - If branch exists, switch to it: `git checkout [branch-from-plan]`
 3. Ensure the plan status is `approved`
 
 ## Process
 
-1. **Read the implementation plan** at `docs/plans/[FEAT-ID].md`
+1. **Read the implementation plan** at `docs/plans/PLAN-[slug].md`
 2. **For each task in order**:
    a. Implement the change
    b. Run relevant linting: `pnpm lint` or equivalent
    c. Run relevant tests if they exist
-   d. Commit with message: `feat([FEAT-ID]): [task description]`
+   d. Commit with message: `feat([slug]): [task description]`
    e. Update the plan, marking task as complete
 3. **After all tasks**:
    a. Run full test suite
@@ -43,7 +43,7 @@ Before starting:
 ## Commit Convention
 
 ```
-feat(FEAT-XXX): Brief description
+feat(user-auth): Brief description
 
 - Detail 1
 - Detail 2
@@ -71,7 +71,7 @@ implemented_at: [timestamp]
 implemented_by: agent:implementer
 tasks_completed: [count]
 tasks_blocked: [count]
-branch: feature/FEAT-XXX
+branch: feat/user-auth
 ---
 ```
 

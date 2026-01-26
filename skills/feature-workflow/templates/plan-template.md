@@ -1,6 +1,6 @@
 ---
-id: FEAT-XXX
-prd: docs/prds/FEAT-XXX.md
+slug: [feature-slug]
+prd: docs/prds/PRD-[slug].md
 status: draft | needs_review | approved | implemented
 planned_at: [timestamp]
 planned_by: agent:planner
@@ -10,7 +10,7 @@ total_tasks: 0
 tasks_completed: 0
 tasks_blocked: 0
 estimated_complexity: Low | Medium | High
-branch: feature/FEAT-XXX
+branch: feat/[slug]
 ---
 
 # Implementation Plan: [Feature Title]
@@ -38,7 +38,7 @@ branch: feature/FEAT-XXX
 - **Complexity**: Low | Medium | High
 - **Dependencies**: None
 - **Status**: pending | in_progress | complete | blocked
-- **Notes**: 
+- **Notes**:
 
 ### Task 1.2: [Description]
 
@@ -47,7 +47,7 @@ branch: feature/FEAT-XXX
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Task 1.1
 - **Status**: pending | in_progress | complete | blocked
-- **Notes**: 
+- **Notes**:
 
 ---
 
@@ -60,7 +60,7 @@ branch: feature/FEAT-XXX
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Phase 1
 - **Status**: pending | in_progress | complete | blocked
-- **Notes**: 
+- **Notes**:
 
 ---
 
@@ -73,7 +73,7 @@ branch: feature/FEAT-XXX
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Phase 2
 - **Status**: pending | in_progress | complete | blocked
-- **Notes**: 
+- **Notes**:
 
 ---
 
@@ -86,14 +86,14 @@ branch: feature/FEAT-XXX
 - **Complexity**: Low
 - **Dependencies**: Phase 3
 - **Status**: pending | in_progress | complete | blocked
-- **Notes**: 
+- **Notes**:
 
 ---
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
+| Risk     | Likelihood   | Impact       | Mitigation |
+| -------- | ------------ | ------------ | ---------- |
 | [Risk 1] | Low/Med/High | Low/Med/High | [Strategy] |
 
 ## Implementation Notes

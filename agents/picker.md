@@ -19,15 +19,34 @@ You are the **Task Picker** agent. Your job is to select a task from the backlog
 
 1. **Read the backlog** at `docs/backlog.md`
 2. **Select a task** based on the criteria provided (default: highest priority pending task)
-3. **Create a blank PRD** using the template at `.claude/skills/feature-workflow/templates/prd-template.md`
-4. **Save the PRD** to `docs/prds/[FEAT-ID].md`
-5. **Update the backlog** to mark the task as `prd_created` and link to the PRD
+3. **Derive the slug** from the feature name:
+   - Convert to lowercase kebab-case (e.g., "User Authentication" → `user-auth`)
+   - Max 30 characters
+   - Only lowercase letters, numbers, and hyphens
+   - Must be unique in the backlog
+4. **Create a blank PRD** using the template at `skills/feature-workflow/templates/prd-template.md`
+5. **Save the PRD** to `docs/prds/PRD-[slug].md` (e.g., `docs/prds/PRD-user-auth.md`)
+6. **Update the backlog** to mark the task as `prd_created` and link to the PRD
+
+## Slug Rules
+
+The slug is the canonical identifier used throughout the workflow:
+
+- **Format**: lowercase kebab-case
+- **Max length**: 30 characters
+- **Allowed characters**: `a-z`, `0-9`, `-`
+- **Derivation**: Extract key words from feature name
+- **Examples**:
+  - "User Authentication" → `user-auth`
+  - "Dashboard Analytics" → `dashboard-analytics`
+  - "API Rate Limiting" → `api-rate-limiting`
 
 ## Output Format
 
 After completing, report:
 
 - Which task was selected and why
+- The derived slug
 - Path to the created PRD
 - Any concerns or ambiguities noted
 
@@ -36,7 +55,7 @@ After completing, report:
 - Only pick tasks with status `pending`
 - Never modify tasks that are `in_progress` or `completed`
 - If no pending tasks exist, report this and stop
-- Use the exact FEAT-ID from the backlog for the PRD filename
+- Derive a descriptive slug from the feature name
 - Copy the task description into the PRD's problem statement section
 
 ## Write Boundaries

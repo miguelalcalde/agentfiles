@@ -1,17 +1,17 @@
 ---
 description: Refine a PRD to ensure it's complete and ready for planning
 arguments:
-  - name: feat_id
-    description: The feature ID to refine (e.g., FEAT-001)
+  - name: slug
+    description: The feature slug to refine (e.g., user-auth)
     required: true
 ---
 
-Use the **refiner** agent to complete and validate the PRD for $ARGUMENTS.feat_id.
+Use the **refiner** agent to complete and validate the PRD for $ARGUMENTS.slug.
 
 ## Instructions
 
-1. Read the PRD at `docs/prds/$ARGUMENTS.feat_id.md`
-2. Review against the template at `.claude/skills/feature-workflow/templates/prd-template.md`
+1. Read the PRD at `docs/prds/PRD-$ARGUMENTS.slug.md`
+2. Review against the template at `skills/feature-workflow/templates/prd-template.md`
 3. Research the codebase to understand:
    - Current architecture and patterns
    - Related existing functionality
@@ -27,6 +27,7 @@ Use the **refiner** agent to complete and validate the PRD for $ARGUMENTS.feat_i
 ## Quality Checklist
 
 Ensure:
+
 - [ ] Problem statement is clear and specific
 - [ ] Proposed solution is technically feasible
 - [ ] Acceptance criteria are testable
@@ -36,6 +37,7 @@ Ensure:
 ## Output
 
 Report:
+
 - Summary of changes made
 - Quality score assessment
 - Any open questions that need human input

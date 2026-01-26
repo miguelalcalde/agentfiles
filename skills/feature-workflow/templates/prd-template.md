@@ -1,15 +1,15 @@
 ---
-id: FEAT-XXX
+slug: [feature-slug]
 title: [Feature Title]
 status: blank | refined | needs_review | approved
 created_at: [timestamp]
 created_by: agent:picker
-refined_at: 
-refined_by: 
+refined_at:
+refined_by:
 iterations: 0
 quality_score: 0
 open_questions: 0
-plan: 
+plan:
 ---
 
 # [Feature Title]

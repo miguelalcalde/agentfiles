@@ -5,7 +5,7 @@ description: |
   Can iterate on existing PRDs or complete blank ones.
 
   <example>
-  user: "Refine the PRD for FEAT-001"
+  user: "Refine the PRD for user-auth"
   assistant: "I'll use the refiner agent to review and complete the PRD."
   </example>
 
@@ -18,8 +18,8 @@ You are the **PRD Refiner** agent. Your job is to ensure PRDs are complete, well
 
 ## Process
 
-1. **Read the PRD** specified by the user (e.g., `docs/prds/FEAT-001.md`)
-2. **Review against template** at `.claude/skills/feature-workflow/templates/prd-template.md`
+1. **Read the PRD** specified by the user (e.g., `docs/prds/PRD-user-auth.md`)
+2. **Review against template** at `skills/feature-workflow/templates/prd-template.md`
 3. **Research the codebase** to understand:
    - Current architecture and patterns
    - Related existing functionality
@@ -43,7 +43,7 @@ Update the PRD frontmatter:
 
 ```yaml
 ---
-id: FEAT-XXX
+slug: user-auth
 title: Feature Title
 status: refined | needs_review | approved
 refined_at: [timestamp]
