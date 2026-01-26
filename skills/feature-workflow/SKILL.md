@@ -1,58 +1,66 @@
-# Feature Workflow Skill
+---
+name: feature-workflow
+description: |
+  Structured workflow for taking features from backlog to implementation.
+  Use when picking tasks, refining PRDs, planning implementation, or implementing features.
+  Invokes specialized agents: picker, refiner, planner, implementer.
+---
 
-This skill provides a structured workflow for taking features from backlog to implementation.
+# Feature Workflow
 
-## Overview
+A structured workflow for taking features from backlog to implementation using 4 specialized agents.
 
-The feature workflow consists of 4 phases:
+## Workflow Overview
 
-1. **Pick** - Select a task from the backlog and create a blank PRD
-2. **Refine** - Complete the PRD with technical details and acceptance criteria
-3. **Plan** - Create a detailed implementation plan with specific tasks
-4. **Implement** - Execute the plan on a feature branch
+```
+Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /implement → Code
+```
+
+Each step is human-triggered. Agents do not auto-chain.
+
+## Commands
+
+| Command                | Agent       | Purpose                                    |
+| ---------------------- | ----------- | ------------------------------------------ |
+| `/pick`                | picker      | Select task from backlog, create blank PRD |
+| `/refine [slug]`       | refiner     | Complete and validate PRD                  |
+| `/plan [slug]`         | planner     | Create implementation plan                 |
+| `/implement [slug]`    | implementer | Execute plan on feature branch             |
 
 ## Agents
 
-| Agent | Purpose | Tools |
-|-------|---------|-------|
-| `picker` | Select tasks, create PRDs | Read, Write, Glob |
-| `refiner` | Complete and validate PRDs | Read, Write, Edit, Grep, Glob |
-| `planner` | Create implementation plans | Read, Write, Edit, Grep, Glob, Bash |
-| `implementer` | Execute plans, write code | Read, Write, Edit, Grep, Glob, Bash |
+| Agent           | Branch       | Writes To                  | Tools                              |
+| --------------- | ------------ | -------------------------- | ---------------------------------- |
+| **picker**      | main         | `docs/prds/`, `backlog.md` | Read, Write, Glob                  |
+| **refiner**     | main         | `docs/prds/`               | Read, Write, Edit, Grep, Glob      |
+| **planner**     | main         | `docs/plans/`, `docs/prds/`| Read, Write, Edit, Grep, Glob      |
+| **implementer** | feature/*    | Source code                | Read, Write, Edit, Grep, Glob, Bash|
 
-## Templates
+## Naming Convention
 
-- `templates/prd-template.md` - PRD document structure
-- `templates/plan-template.md` - Implementation plan structure
+The workflow uses descriptive **slugs** instead of numeric IDs:
+
+| Artifact      | Format           | Example                           |
+| ------------- | ---------------- | --------------------------------- |
+| Backlog entry | `[slug] Title`   | `[user-auth] User Authentication` |
+| PRD file      | `PRD-[slug].md`  | `PRD-user-auth.md`                |
+| Plan file     | `PLAN-[slug].md` | `PLAN-user-auth.md`               |
+| Branch        | `feat/[slug]`    | `feat/user-auth`                  |
+
+Slugs: lowercase kebab-case, max 30 characters.
 
 ## Status Flow
 
 ### PRD Statuses
+
 ```
 blank → refined → needs_review → approved
 ```
 
 ### Plan Statuses
+
 ```
 draft → needs_review → approved → implemented
-```
-
-## Usage
-
-Each agent is invoked independently by a human:
-
-```bash
-# Pick a task
-claude "Use the picker agent to select the next P0 task"
-
-# Refine the PRD
-claude "Use the refiner agent on docs/prds/FEAT-001.md"
-
-# Create plan
-claude "Use the planner agent for FEAT-001"
-
-# Implement
-claude "Use the implementer agent for FEAT-001"
 ```
 
 ## Human Checkpoints
@@ -61,3 +69,36 @@ claude "Use the implementer agent for FEAT-001"
 - After **Refine**: Review PRD, mark as `approved` if ready
 - After **Plan**: Review plan, mark as `approved` if ready
 - After **Implement**: Review code, create PR manually
+
+## Templates
+
+- [PRD Template](templates/prd-template.md) - Structure for Product Requirements Documents
+- [Plan Template](templates/plan-template.md) - Structure for Implementation Plans
+
+## Project Setup
+
+Each project using this workflow needs a `docs/` folder:
+
+```
+your-project/
+└── docs/
+    ├── backlog.md
+    ├── prds/
+    └── plans/
+```
+
+## Example Usage
+
+```bash
+# Pick the highest priority task
+/pick
+
+# Refine a specific PRD
+/refine user-auth
+
+# Create implementation plan
+/plan user-auth
+
+# Execute the plan
+/implement user-auth
+```
