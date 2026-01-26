@@ -1,52 +1,52 @@
-# Ralphie
+# Agentfiles
 
-Portable agents for Claude Code and Cursor.
+Portable agents for Claude Code and Cursor. Fork this repo to build your own agent toolkit.
 
-## Install
+## Quick Start
 
 ```bash
-npx ralphie
+# Fork this repo on GitHub, then:
+git clone git@github.com:YOUR_USERNAME/agentfiles.git ~/.agentfiles
+cd ~/.agentfiles && ./setup.sh
 ```
-
-This will interactively guide you through:
-
-1. Choosing install location (global, local project, or custom path)
-2. Selecting which tools (Claude Code, Cursor, or both)
-3. Previewing changes before they're made
-4. Backing up any existing files
 
 ## Commands
 
 ```bash
-npx ralphie                     # Interactive install (default)
-npx ralphie install             # Same as above
-npx ralphie install --global    # Install to ~/.claude, ~/.cursor
-npx ralphie install --local     # Install to ./.claude, ./.cursor
-npx ralphie install --path /foo # Install to custom path
-npx ralphie install --dry-run   # Preview only, no changes
-npx ralphie install --claude    # Claude Code only
-npx ralphie install --cursor    # Cursor only
-
-npx ralphie status              # Show what's installed where
-npx ralphie unlink              # Remove symlinks
+./setup.sh                      # Interactive install
+./setup.sh --global cursor      # Global install, Cursor only
+./setup.sh --local all          # Local install (current dir), both tools
+./setup.sh --dry-run            # Preview changes without making them
+./setup.sh status               # Show what's installed where
+./setup.sh unlink --global      # Remove global symlinks
 ```
 
 ## What Gets Installed
 
-The following symlinks are created in your chosen location:
+The setup script creates symlinks from your cloned repo to the tool config directories:
 
 ```
-.claude/
-├── agents/     -> ralphie/agents
-├── commands/   -> ralphie/commands
-├── skills/     -> ralphie/skills
-└── settings.json -> ralphie/settings/claude.json
+~/.claude/
+├── agents/     -> ~/.agentfiles/agents
+├── commands/   -> ~/.agentfiles/commands
+├── skills/     -> ~/.agentfiles/skills
+└── settings.json -> ~/.agentfiles/settings/claude.json
 
-.cursor/
-├── agents/     -> ralphie/agents
-├── commands/   -> ralphie/commands
-└── skills/     -> ralphie/skills
+~/.cursor/
+├── agents/     -> ~/.agentfiles/agents
+├── commands/   -> ~/.agentfiles/commands
+└── skills/     -> ~/.agentfiles/skills
 ```
+
+## Customizing
+
+Since you've forked the repo, you can:
+
+1. Add your own commands to `commands/`
+2. Create new skills in `skills/`
+3. Modify agents in `agents/`
+4. Commit and push to your fork
+5. On new machines, clone your fork and run setup
 
 ## Workflow
 
@@ -110,7 +110,15 @@ Example `backlog.md`:
 
 ## Safety Features
 
-- **Preview before action** - Always shows what will happen before making changes
-- **Explicit confirmation** - Requires confirmation before overwriting existing files
+- **Preview before action** - Use `--dry-run` to see what will happen
+- **Explicit confirmation** - Asks before overwriting existing files
 - **Timestamped backups** - Existing files are backed up as `filename.backup.YYYY-MM-DD`
-- **Unlink command** - Easy way to remove symlinks if needed
+- **Unlink command** - Easy way to remove symlinks with `./setup.sh unlink`
+
+## Updating
+
+```bash
+cd ~/.agentfiles && git pull
+```
+
+Since symlinks point to your cloned repo, updates are immediate.
