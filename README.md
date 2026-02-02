@@ -1,5 +1,9 @@
 # Agentfiles
 
+> [!IMPORTANT]
+> This is a work in progress. It is not ready for production use.
+> This project has been de-prioritized in favor of agentworkflow which is more localized.
+
 Portable agents, commands, and skills for Claude Code and Cursor. Fork this repo to build your own agent toolkit.
 
 ## Quick Start
@@ -23,24 +27,24 @@ This toolkit works with both **Claude Code** and **Cursor**. Here's what each pl
 
 ### Feature Compatibility
 
-| Feature | Claude Code | Cursor | Notes |
-|---------|-------------|--------|-------|
-| **Skills** | ✅ | ✅ | Same SKILL.md format, both platforms |
-| **Agents** | ✅ | ✅ | Cursor calls them "subagents", reads `.claude/agents/` for compatibility |
-| **Commands** | ✅ | ❌ | Claude Code only; Cursor uses different slash command system |
-| **Settings** | ✅ | ❌ | Claude uses `settings.json`; Cursor uses VSCode settings |
+| Feature      | Claude Code | Cursor | Notes                                                                    |
+| ------------ | ----------- | ------ | ------------------------------------------------------------------------ |
+| **Skills**   | ✅          | ✅     | Same SKILL.md format, both platforms                                     |
+| **Agents**   | ✅          | ✅     | Cursor calls them "subagents", reads `.claude/agents/` for compatibility |
+| **Commands** | ✅          | ❌     | Claude Code only; Cursor uses different slash command system             |
+| **Settings** | ✅          | ❌     | Claude uses `settings.json`; Cursor uses VSCode settings                 |
 
 ### Agent Field Compatibility
 
-| Field | Claude Code | Cursor | Notes |
-|-------|-------------|--------|-------|
-| `name` | ✅ | ✅ | Agent identifier |
-| `description` | ✅ | ✅ | When to invoke this agent |
-| `model` | ✅ | ✅ | `inherit`, `fast`, or specific model ID |
-| `color` | ✅ | ❌ | UI customization (Claude only) |
-| `tools` | ✅ | ❌ | Tool restrictions (Claude only); Cursor inherits from parent |
-| `readonly` | ❓ | ✅ | Restrict write permissions (Cursor only) |
-| `is_background` | ✅ | ✅ | Run without blocking |
+| Field           | Claude Code | Cursor | Notes                                                        |
+| --------------- | ----------- | ------ | ------------------------------------------------------------ |
+| `name`          | ✅          | ✅     | Agent identifier                                             |
+| `description`   | ✅          | ✅     | When to invoke this agent                                    |
+| `model`         | ✅          | ✅     | `inherit`, `fast`, or specific model ID                      |
+| `color`         | ✅          | ❌     | UI customization (Claude only)                               |
+| `tools`         | ✅          | ❌     | Tool restrictions (Claude only); Cursor inherits from parent |
+| `readonly`      | ❓          | ✅     | Restrict write permissions (Cursor only)                     |
+| `is_background` | ✅          | ✅     | Run without blocking                                         |
 
 ### What This Means
 
@@ -119,12 +123,12 @@ Once installed, you have access to the feature workflow:
 Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /implement → Code
 ```
 
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/pick` | picker | Select task from backlog, create blank PRD |
-| `/refine slug` | refiner | Complete and validate PRD |
-| `/plan slug` | planner | Create implementation plan |
-| `/implement slug` | implementer | Execute plan on feature branch |
+| Command           | Agent       | Purpose                                    |
+| ----------------- | ----------- | ------------------------------------------ |
+| `/pick`           | picker      | Select task from backlog, create blank PRD |
+| `/refine slug`    | refiner     | Complete and validate PRD                  |
+| `/plan slug`      | planner     | Create implementation plan                 |
+| `/implement slug` | implementer | Execute plan on feature branch             |
 
 ### Programmatic Chaining
 
@@ -156,12 +160,12 @@ In Cursor, invoke agents directly:
 
 The workflow uses descriptive **slugs** instead of numeric IDs:
 
-| Artifact | Format | Example |
-|----------|--------|---------|
-| Backlog entry | `[slug] Title` | `[user-auth] User Authentication` |
-| PRD file | `PRD-[slug].md` | `PRD-user-auth.md` |
-| Plan file | `PLAN-[slug].md` | `PLAN-user-auth.md` |
-| Branch | `feat/[slug]` | `feat/user-auth` |
+| Artifact      | Format           | Example                           |
+| ------------- | ---------------- | --------------------------------- |
+| Backlog entry | `[slug] Title`   | `[user-auth] User Authentication` |
+| PRD file      | `PRD-[slug].md`  | `PRD-user-auth.md`                |
+| Plan file     | `PLAN-[slug].md` | `PLAN-user-auth.md`               |
+| Branch        | `feat/[slug]`    | `feat/user-auth`                  |
 
 Slugs are lowercase kebab-case, max 30 characters.
 

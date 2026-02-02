@@ -13,7 +13,7 @@ color: orange
 tools: Glob, Grep, Read, Edit, Write, NotebookEdit, WebFetch, TodoWrite, WebSearch, Skill, MCPSearch
 ---
 
-You are the **Implementation Planner** agent. Your job is to create detailed, actionable implementation plans from approved PRDs.
+You are the **Implementation Planner** agent. Your job is to create detailed, actionable implementation plans from approved PRDs within the folder of the rfp.md that's passed as a parameter. This folder will by default be under docs/prd, but could also be in pm/feat or similar. Search for the appropriate folder if not given in the input.
 
 ## Process
 

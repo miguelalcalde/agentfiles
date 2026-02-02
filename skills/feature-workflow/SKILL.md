@@ -3,12 +3,12 @@ name: feature-workflow
 description: |
   Structured workflow for taking features from backlog to implementation.
   Use when picking tasks, refining PRDs, planning implementation, or implementing features.
-  Invokes specialized agents: picker, refiner, planner, implementer.
+  Invokes specialized agents: picker, refiner, planner, implementer, conductor.
 ---
 
 # Feature Workflow
 
-A structured workflow for taking features from backlog to implementation using 4 specialized agents.
+A structured workflow for taking features from backlog to implementation using specialized agents.
 
 ## Workflow Overview
 
@@ -16,7 +16,9 @@ A structured workflow for taking features from backlog to implementation using 4
 Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /implement → Code
 ```
 
-Each step is human-triggered. Agents do not auto-chain.
+**Manual mode**: Each step is human-triggered. Agents do not auto-chain.
+
+**Conductor mode**: Run `/conduct` to orchestrate all phases automatically until complete or blocked.
 
 ## Commands
 
@@ -26,15 +28,19 @@ Each step is human-triggered. Agents do not auto-chain.
 | `/refine [slug]`       | refiner     | Complete and validate PRD                  |
 | `/plan [slug]`         | planner     | Create implementation plan                 |
 | `/implement [slug]`    | implementer | Execute plan on feature branch             |
+| `/conduct`             | conductor   | Orchestrate all phases in a loop           |
+| `/conduct --phases X`  | conductor   | Run specific phases only (e.g., pick,plan) |
+| `/conduct --slug X`    | conductor   | Process specific feature only              |
 
 ## Agents
 
-| Agent           | Branch       | Writes To                  | Tools                              |
-| --------------- | ------------ | -------------------------- | ---------------------------------- |
-| **picker**      | main         | `docs/prds/`, `backlog.md` | Read, Write, Glob                  |
-| **refiner**     | main         | `docs/prds/`               | Read, Write, Edit, Grep, Glob      |
-| **planner**     | main         | `docs/plans/`, `docs/prds/`| Read, Write, Edit, Grep, Glob      |
-| **implementer** | feature/*    | Source code                | Read, Write, Edit, Grep, Glob, Bash|
+| Agent           | Branch       | Writes To                    | Tools                              |
+| --------------- | ------------ | ---------------------------- | ---------------------------------- |
+| **picker**      | main         | `.workflow/prds/`, `backlog.md` | Read, Write, Glob                  |
+| **refiner**     | main         | `.workflow/prds/`              | Read, Write, Edit, Grep, Glob      |
+| **planner**     | main         | `.workflow/plans/`, `.workflow/prds/` | Read, Write, Edit, Grep, Glob |
+| **implementer** | feature/*    | Source code                  | Read, Write, Edit, Grep, Glob, Bash|
+| **conductor**   | main         | `action-log.md`, orchestrates| Read, Write, Grep, Glob            |
 
 ## Naming Convention
 
@@ -70,24 +76,23 @@ draft → needs_review → approved → implemented
 - After **Plan**: Review plan, mark as `approved` if ready
 - After **Implement**: Review code, create PR manually
 
-## Templates
-
-- [PRD Template](templates/prd-template.md) - Structure for Product Requirements Documents
-- [Plan Template](templates/plan-template.md) - Structure for Implementation Plans
-
 ## Project Setup
 
-Each project using this workflow needs a `docs/` folder:
+Each project using this workflow needs a `.workflow/` folder:
 
 ```
 your-project/
-└── docs/
+└── .workflow/
+    ├── config.yaml
     ├── backlog.md
+    ├── action-log.md
     ├── prds/
     └── plans/
 ```
 
 ## Example Usage
+
+### Manual Mode (step-by-step)
 
 ```bash
 # Pick the highest priority task
@@ -101,4 +106,35 @@ your-project/
 
 # Execute the plan
 /implement user-auth
+```
+
+### Conductor Mode (automated)
+
+```bash
+# Run full pipeline until complete or blocked
+/conduct
+
+# Run only pick and plan phases
+/conduct --phases pick,plan
+
+# Process specific feature only
+/conduct --slug user-auth
+
+# Named conductor for parallel operation
+/conduct --name frontend --phases pick,plan
+```
+
+### Parallel Conductors
+
+Multiple conductors can run in parallel when handling different phases:
+
+```bash
+# Terminal 1: Create PRDs and plans
+/conduct --name frontend --phases pick,plan
+
+# Terminal 2: Review plans
+/conduct --name reviewer --phases refine
+
+# Terminal 3: Implement approved plans
+/conduct --name builder --phases implement
 ```
