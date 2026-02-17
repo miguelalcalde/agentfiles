@@ -114,6 +114,18 @@ split_csv() {
     IFS=',' read -r -a OUT_ARRAY <<< "$input"
 }
 
+csv_contains() {
+    local needle="$1"
+    shift
+    local value
+    for value in "$@"; do
+        if [ "$value" = "$needle" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 relative_path() {
     local source="$1"
     local target_dir="$2"
@@ -386,30 +398,36 @@ prompt_targets_if_needed() {
         echo "  4) Files"
         echo "  a) all"
         echo ""
-        prompt_read target_choice "Choice [1-4 or a] (default: a - all): "
+        prompt_read target_choice "Choice [1-4 comma-separated or a] (default: a - all): "
         target_choice="${target_choice:-a}"
-        case "$target_choice" in
-            1) AGENTS_REQUESTED=true ;;
-            3)
-                COMMANDS_REQUESTED=true
-                ;;
-            2)
-                SKILLS_REQUESTED=true
-                ;;
-            4)
-                FILES_REQUESTED=true
-                ;;
-            a|all)
-                AGENTS_REQUESTED=true
-                SKILLS_REQUESTED=true
-                COMMANDS_REQUESTED=true
-                FILES_REQUESTED=true
-                ;;
-            *)
-                echo "Invalid choice"
-                exit 1
-                ;;
-        esac
+        split_csv "$target_choice"
+
+        if csv_contains "a" "${OUT_ARRAY[@]}" || csv_contains "all" "${OUT_ARRAY[@]}"; then
+            AGENTS_REQUESTED=true
+            SKILLS_REQUESTED=true
+            COMMANDS_REQUESTED=true
+            FILES_REQUESTED=true
+            return
+        fi
+
+        local choice
+        for choice in "${OUT_ARRAY[@]}"; do
+            case "$choice" in
+                1) AGENTS_REQUESTED=true ;;
+                2) SKILLS_REQUESTED=true ;;
+                3) COMMANDS_REQUESTED=true ;;
+                4) FILES_REQUESTED=true ;;
+                *)
+                    echo "Invalid choice: $choice"
+                    exit 1
+                    ;;
+            esac
+        done
+
+        if [ "$AGENTS_REQUESTED" = false ] && [ "$SKILLS_REQUESTED" = false ] && [ "$COMMANDS_REQUESTED" = false ] && [ "$FILES_REQUESTED" = false ]; then
+            echo "Invalid choice"
+            exit 1
+        fi
     fi
 }
 
