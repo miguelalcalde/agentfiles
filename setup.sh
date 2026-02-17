@@ -4,8 +4,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_URL="https://github.com/miguelalcalde/agentfiles.git"
-AGENTS_HOME="$HOME/.agents"
-INSTALL_DIR="$AGENTS_HOME/repo"
+BOOTSTRAP_TMP_DIR=""
+BOOTSTRAP_ACTIVE=false
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -35,13 +35,24 @@ SKILLS_ARG=""
 COMMANDS_ARG=""
 ORIGINAL_ARGS=("$@")
 
+cleanup_bootstrap_tmp() {
+    if [ "$BOOTSTRAP_ACTIVE" = true ] && [ -n "$BOOTSTRAP_TMP_DIR" ] && [ -d "$BOOTSTRAP_TMP_DIR" ]; then
+        # Avoid rm -rf; remove recursively via Python for portability.
+        python3 - <<'PY' "$BOOTSTRAP_TMP_DIR"
+import shutil
+import sys
+shutil.rmtree(sys.argv[1], ignore_errors=True)
+PY
+    fi
+}
+
 ensure_repo_checkout() {
     if [ -d "$SCRIPT_DIR/agents" ] && [ -d "$SCRIPT_DIR/commands" ] && [ -d "$SCRIPT_DIR/skills" ]; then
         return
     fi
 
     echo -e "${CYAN}Agentfiles bootstrap${NC}"
-    echo -e "Bootstrapping source repo to ${GRAY}$INSTALL_DIR${NC}"
+    echo "Preparing temporary source checkout..."
     echo ""
 
     if ! command -v git &> /dev/null; then
@@ -49,17 +60,15 @@ ensure_repo_checkout() {
         exit 1
     fi
 
-    mkdir -p "$(dirname "$INSTALL_DIR")"
-    if [ -d "$INSTALL_DIR/.git" ]; then
-        echo -e "${YELLOW}Existing installation found.${NC} Updating..."
-        (cd "$INSTALL_DIR" && git pull --ff-only) || true
-    else
-        echo "Cloning..."
-        git clone --quiet "$REPO_URL" "$INSTALL_DIR"
-    fi
+    BOOTSTRAP_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/agentfiles-bootstrap.XXXXXX")"
+    BOOTSTRAP_ACTIVE=true
+    trap cleanup_bootstrap_tmp EXIT INT TERM
+    local bootstrap_repo_dir="$BOOTSTRAP_TMP_DIR/repo"
+    echo "Cloning..."
+    git clone --quiet "$REPO_URL" "$bootstrap_repo_dir"
+    SCRIPT_DIR="$bootstrap_repo_dir"
 
     echo ""
-    exec "$INSTALL_DIR/setup.sh" "$@"
 }
 
 usage() {
@@ -117,6 +126,7 @@ print_verbose_diagnostics() {
     verbose_log "pwd=$(pwd)"
     verbose_log "script_dir=$SCRIPT_DIR"
     verbose_log "command=$COMMAND"
+    verbose_log "bootstrap_active=$BOOTSTRAP_ACTIVE bootstrap_tmp_dir=$BOOTSTRAP_TMP_DIR"
     verbose_log "stdin_tty=$tty_in stdout_tty=$tty_out dev_tty_readable=$tty_dev"
 }
 
@@ -292,8 +302,13 @@ discover_skills() {
         return
     fi
     for dir in $all; do
+        local name
+        name=$(basename "$dir")
+        case "$name" in
+            *.backup.*) continue ;;
+        esac
         if [ -f "$dir/SKILL.md" ]; then
-            basename "$dir"
+            echo "$name"
         fi
     done
 }
