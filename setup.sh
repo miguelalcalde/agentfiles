@@ -12,6 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 GRAY='\033[0;90m'
+BOLD='\033[1m'
 NC='\033[0m'
 
 COMMAND="install"
@@ -294,11 +295,14 @@ prompt_install_scope() {
         echo -e "${RED}Error: specify --global, --local, or --path${NC}"
         exit 1
     fi
-    echo "Install scope:"
+    echo ""
+    echo -e "${BOLD}Install scope${NC}"
     echo "  1) Global ($HOME)"
     echo "  2) Local ($(pwd))"
     echo "  3) Custom path"
-    read -p "Choice [1-3]: " scope_choice
+    echo ""
+    read -p "Choice [1-3] (default: 2 - local/project): " scope_choice
+    scope_choice="${scope_choice:-2}"
     case "$scope_choice" in
         1) BASE_DIR="$HOME" ;;
         2) BASE_DIR="$(pwd)" ;;
@@ -321,11 +325,13 @@ prompt_tools() {
         return
     fi
     echo ""
-    echo "Install for which tools?"
+    echo -e "${BOLD}Install tools${NC}"
     echo "  1) Claude Code only"
     echo "  2) Cursor only"
     echo "  3) Both"
-    read -p "Choice [1-3]: " tools_choice
+    echo ""
+    read -p "Choice [1-3] (default: 3 - both): " tools_choice
+    tools_choice="${tools_choice:-3}"
     case "$tools_choice" in
         1) TOOLS="claude" ;;
         2) TOOLS="cursor" ;;
@@ -346,10 +352,12 @@ prompt_mode() {
         return
     fi
     echo ""
-    echo "Install mode:"
+    echo -e "${BOLD}Install mode${NC}"
     echo "  1) symlink (relative)"
     echo "  2) copy"
-    read -p "Choice [1-2]: " mode_choice
+    echo ""
+    read -p "Choice [1-2] (default: 1 - symlink): " mode_choice
+    mode_choice="${mode_choice:-1}"
     case "$mode_choice" in
         1) MODE="symlink" ;;
         2) MODE="copy" ;;
@@ -369,13 +377,16 @@ prompt_targets_if_needed() {
             FILES_REQUESTED=true
             return
         fi
-        echo "What do you want to install?"
+        echo ""
+        echo -e "${BOLD}What do you want to install?${NC}"
         echo "  1) Agents"
         echo "  2) Skills"
         echo "  3) Commands"
         echo "  4) Files"
         echo "  5) All"
-        read -p "Choice [1-5]: " target_choice
+        echo ""
+        read -p "Choice [1-5] (default: 5 - all): " target_choice
+        target_choice="${target_choice:-5}"
         case "$target_choice" in
             1) AGENTS_REQUESTED=true ;;
             3)
@@ -423,14 +434,16 @@ resolve_agent_selection() {
         return
     fi
     echo ""
-    echo "Available agents:"
+    echo -e "${BOLD}Available agents${NC}"
     local i=1
     for name in "${available_agents[@]}"; do
         echo "  $i) $name"
         i=$((i + 1))
     done
     echo "  a) all"
-    read -p "Select agents (comma-separated indexes or 'a'): " picked
+    echo ""
+    read -p "Select agents (comma-separated indexes or 'a', default: a): " picked
+    picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_AGENTS=("${available_agents[@]}")
         return
@@ -462,12 +475,14 @@ resolve_file_selection() {
         return
     fi
     echo ""
-    echo "Available file groups:"
+    echo -e "${BOLD}Available file groups${NC}"
     echo "  1) commands"
     echo "  2) skills"
     echo "  3) backlog"
     echo "  a) all"
-    read -p "Select file groups (comma-separated indexes or 'a'): " picked
+    echo ""
+    read -p "Select file groups (comma-separated indexes or 'a', default: a): " picked
+    picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_FILE_GROUPS=("${AVAILABLE_FILE_GROUPS[@]}")
         return
@@ -511,14 +526,16 @@ resolve_skills_selection() {
         return
     fi
     echo ""
-    echo "Available skills:"
+    echo -e "${BOLD}Available skills${NC}"
     local i=1
     for name in "${available_skills[@]}"; do
         echo "  $i) $name"
         i=$((i + 1))
     done
     echo "  a) all"
-    read -p "Select skills (comma-separated indexes or 'a'): " picked
+    echo ""
+    read -p "Select skills (comma-separated indexes or 'a', default: a): " picked
+    picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_SKILLS=("${available_skills[@]}")
         return
@@ -560,14 +577,16 @@ resolve_commands_selection() {
         return
     fi
     echo ""
-    echo "Available commands:"
+    echo -e "${BOLD}Available commands${NC}"
     local i=1
     for name in "${available_commands[@]}"; do
         echo "  $i) $name"
         i=$((i + 1))
     done
     echo "  a) all"
-    read -p "Select commands (comma-separated indexes or 'a'): " picked
+    echo ""
+    read -p "Select commands (comma-separated indexes or 'a', default: a): " picked
+    picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_COMMANDS=("${available_commands[@]}")
         return
