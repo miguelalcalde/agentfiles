@@ -78,14 +78,12 @@ draft → needs_review → approved → implemented
 
 ## Project Setup
 
-Each project using this workflow needs a workflow directory (configured in `paths`, default: `.workflow/`):
+Each project using this workflow needs a `.backlog/` directory:
 
 ```
 your-project/
-└── .workflow/  # default; configurable via config.yaml paths
-    ├── config.yaml
+└── .backlog/
     ├── backlog.md
-    ├── action-log.md
     ├── prds/
     └── plans/
 ```

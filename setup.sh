@@ -1,14 +1,10 @@
 #!/bin/bash
 
-# Agentfiles Setup Script
-# Creates symlinks to ~/.claude and/or ~/.cursor
-
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_URL="https://github.com/miguelalcalde/ralphie"
+REPO_URL="https://github.com/miguelalcalde/agentfiles.git"
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -17,291 +13,453 @@ CYAN='\033[0;36m'
 GRAY='\033[0;90m'
 NC='\033[0m'
 
-# Defaults
-DRY_RUN=false
+COMMAND="install"
 BASE_DIR=""
 TOOLS=""
+MODE=""
+DRY_RUN=false
 
-# Show usage
+AGENTS_REQUESTED=false
+FILES_REQUESTED=false
+AGENTS_ARG=""
+FILES_ARG=""
+
+DEFAULT_FILES=("commands" "skills")
+AVAILABLE_FILE_GROUPS=("commands" "skills" "backlog")
+
 usage() {
     echo "Usage: ./setup.sh [command] [options]"
     echo ""
     echo "Commands:"
-    echo "  install     Install symlinks (default)"
-    echo "  status      Show current installation status"
-    echo "  unlink      Remove symlinks"
-    echo "  update      Pull latest changes from git"
-    echo "  validate    Check repo structure is valid"
+    echo "  install        Install selected agents/files (default)"
+    echo "  status         Show current installation status"
+    echo "  update         Pull latest changes from git"
     echo ""
-    echo "Options:"
-    echo "  --global    Install to home directory (~/.claude, ~/.cursor)"
-    echo "  --local     Install to current directory (./.claude, ./.cursor)"
-    echo "  --path DIR  Install to custom directory"
-    echo "  --dry-run   Preview changes without making them"
-    echo "  claude      Install Claude Code only"
-    echo "  cursor      Install Cursor only"
-    echo "  all         Install both (default)"
+    echo "Install flags:"
+    echo "  --agents [x,y] Install agent files (prompt if omitted)"
+    echo "  --files [x,y]  Install file groups: commands, skills, backlog"
+    echo ""
+    echo "Scope and mode:"
+    echo "  --global       Install to home directory (~)"
+    echo "  --local        Install to current project directory"
+    echo "  --path DIR     Install to custom base directory"
+    echo "  --mode MODE    Install mode: symlink | copy"
+    echo "  --tools TOOLS  claude | cursor | all"
+    echo "  --dry-run      Preview changes without writing"
     echo ""
     echo "Examples:"
-    echo "  ./setup.sh                      # Interactive mode"
-    echo "  ./setup.sh --global cursor      # Global install, Cursor only"
-    echo "  ./setup.sh --local all          # Local install, both tools"
-    echo "  ./setup.sh --dry-run            # Preview only"
-    echo "  ./setup.sh status               # Show what's installed"
-    echo "  ./setup.sh unlink --global      # Remove global symlinks"
-    echo "  ./setup.sh update               # Pull latest changes"
-    echo "  ./setup.sh validate             # Check repo structure"
+    echo "  ./setup.sh"
+    echo "  ./setup.sh --agents"
+    echo "  ./setup.sh --agents picker,planner --mode symlink --global --tools all"
+    echo "  ./setup.sh --files commands,skills --mode symlink --global"
+    echo "  ./setup.sh --files backlog --mode copy --local"
 }
 
-# Validate repo structure
-validate_repo() {
-    local valid=true
-    local required_dirs=("agents" "commands" "skills")
-    
-    echo -e "${CYAN}Validating repo structure...${NC}"
-    echo ""
-    
-    for dir in "${required_dirs[@]}"; do
-        if [ -d "$SCRIPT_DIR/$dir" ]; then
-            local count=$(find "$SCRIPT_DIR/$dir" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
-            echo -e "  ${GREEN}✓${NC} $dir/ ${GRAY}($count files)${NC}"
-        else
-            echo -e "  ${RED}✗${NC} $dir/ ${RED}(missing)${NC}"
-            valid=false
-        fi
-    done
-    
-    # Check for git repo
-    echo ""
-    if [ -d "$SCRIPT_DIR/.git" ]; then
-        local branch=$(cd "$SCRIPT_DIR" && git branch --show-current 2>/dev/null || echo "unknown")
-        local commit=$(cd "$SCRIPT_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-        echo -e "  ${GREEN}✓${NC} Git repo ${GRAY}($branch @ $commit)${NC}"
-    else
-        echo -e "  ${YELLOW}!${NC} Not a git repo ${GRAY}(updates won't work)${NC}"
-    fi
-    
-    echo ""
-    if [ "$valid" = true ]; then
-        echo -e "${GREEN}Repo structure is valid.${NC}"
-        return 0
-    else
-        echo -e "${RED}Repo structure is invalid. Some directories are missing.${NC}"
-        return 1
-    fi
+is_interactive() {
+    [ -t 0 ] && [ -t 1 ]
 }
 
-# Update from git
-update_repo() {
-    echo -e "${CYAN}Updating from git...${NC}"
-    echo ""
-    
-    if [ ! -d "$SCRIPT_DIR/.git" ]; then
-        echo -e "${RED}Error: Not a git repository.${NC}"
-        echo "Clone the repo first: git clone $REPO_URL ~/.agentfiles"
-        return 1
-    fi
-    
-    cd "$SCRIPT_DIR"
-    
-    # Show current state
-    local before=$(git rev-parse --short HEAD)
-    echo -e "  Current: ${GRAY}$before${NC}"
-    
-    # Pull changes
-    if git pull --ff-only; then
-        local after=$(git rev-parse --short HEAD)
-        if [ "$before" = "$after" ]; then
-            echo -e "  ${GREEN}Already up to date.${NC}"
-        else
-            echo ""
-            echo -e "  ${GREEN}Updated: $before → $after${NC}"
-            echo ""
-            echo "  Recent changes:"
-            git log --oneline "$before..$after" | head -5 | while read line; do
-                echo -e "    ${GRAY}$line${NC}"
-            done
-        fi
-    else
-        echo -e "  ${RED}Update failed. You may have local changes.${NC}"
-        echo "  Try: cd $SCRIPT_DIR && git status"
-        return 1
-    fi
+split_csv() {
+    local input="$1"
+    input="${input// /}"
+    IFS=',' read -r -a OUT_ARRAY <<< "$input"
 }
 
-# Check if path exists and what type
-check_path() {
+relative_path() {
+    local source="$1"
+    local target_dir="$2"
+    python3 -c "import os,sys;print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$source" "$target_dir"
+}
+
+path_type() {
     local path="$1"
-    if [ ! -e "$path" ]; then
-        echo "none"
-    elif [ -L "$path" ]; then
+    if [ -L "$path" ]; then
         echo "symlink"
     elif [ -d "$path" ]; then
         echo "directory"
     elif [ -f "$path" ]; then
         echo "file"
     else
-        echo "unknown"
+        echo "none"
     fi
 }
 
-# Create symlink with safety checks
-create_link() {
+confirm_replace() {
+    local target="$1"
+    if ! is_interactive; then
+        echo "no"
+        return
+    fi
+    read -p "Replace existing path '$target'? [y/N]: " reply
+    if [ "$reply" = "y" ] || [ "$reply" = "Y" ]; then
+        echo "yes"
+    else
+        echo "no"
+    fi
+}
+
+install_entry() {
     local source="$1"
     local target="$2"
-    local path_type=$(check_path "$target")
-    
-    # Ensure parent directory exists
+    local mode="$3"
+    local source_type="$4"
+    local current_type
+    current_type=$(path_type "$target")
+
     if [ "$DRY_RUN" = true ]; then
-        if [ ! -d "$(dirname "$target")" ]; then
-            echo -e "  ${BLUE}[dry-run]${NC} Would create directory: $(dirname "$target")"
-        fi
-    else
-        mkdir -p "$(dirname "$target")"
+        echo -e "  ${BLUE}[dry-run]${NC} $mode $source -> $target"
+        return
     fi
-    
-    case "$path_type" in
-        none)
-            if [ "$DRY_RUN" = true ]; then
-                echo -e "  ${BLUE}[dry-run]${NC} Would create: $target"
-                echo -e "           ${GRAY}-> $source${NC}"
-            else
-                ln -s "$source" "$target"
-                echo -e "  ${GREEN}+${NC} Created: $target"
-            fi
-            ;;
-        symlink)
-            if [ "$DRY_RUN" = true ]; then
-                echo -e "  ${BLUE}[dry-run]${NC} Would update: $target"
-                echo -e "           ${GRAY}-> $source${NC}"
-            else
-                rm "$target"
-                ln -s "$source" "$target"
-                echo -e "  ${YELLOW}~${NC} Updated: $target"
-            fi
-            ;;
-        directory|file)
-            local backup="${target}.backup.$(date +%Y-%m-%d)"
-            if [ "$DRY_RUN" = true ]; then
-                echo -e "  ${RED}[dry-run]${NC} Would backup: $target -> $backup"
-                echo -e "  ${BLUE}[dry-run]${NC} Would create: $target"
-                echo -e "           ${GRAY}-> $source${NC}"
-            else
-                echo -e "  ${RED}!${NC} Existing $path_type found: $target"
-                read -p "    Backup and replace? [y/N]: " confirm
-                if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
-                    mv "$target" "$backup"
-                    echo -e "  ${YELLOW}!${NC} Backed up to: $backup"
-                    ln -s "$source" "$target"
-                    echo -e "  ${GREEN}+${NC} Created: $target"
-                else
-                    echo -e "  ${GRAY}-${NC} Skipped: $target"
-                fi
-            fi
-            ;;
-    esac
+
+    mkdir -p "$(dirname "$target")"
+
+    if [ "$current_type" != "none" ]; then
+        local decision
+        decision=$(confirm_replace "$target")
+        if [ "$decision" != "yes" ]; then
+            echo -e "  ${GRAY}-${NC} Skipped: $target"
+            return
+        fi
+        local backup="${target}.backup.$(date +%Y-%m-%d-%H%M%S)"
+        mv "$target" "$backup"
+        echo -e "  ${YELLOW}!${NC} Backed up: $backup"
+    fi
+
+    if [ "$mode" = "copy" ]; then
+        if [ "$source_type" = "dir" ]; then
+            cp -R "$source" "$target"
+        else
+            cp "$source" "$target"
+        fi
+        echo -e "  ${GREEN}+${NC} Copied: $target"
+        return
+    fi
+
+    local rel
+    rel=$(relative_path "$source" "$(dirname "$target")")
+    ln -s "$rel" "$target"
+    echo -e "  ${GREEN}+${NC} Linked: $target ${GRAY}-> $rel${NC}"
 }
 
-# Remove symlink (only if it's a symlink)
-remove_link() {
-    local target="$1"
-    local path_type=$(check_path "$target")
-    
-    case "$path_type" in
-        none)
-            echo -e "  ${GRAY}-${NC} Not found: $target"
-            ;;
-        symlink)
-            if [ "$DRY_RUN" = true ]; then
-                echo -e "  ${BLUE}[dry-run]${NC} Would remove: $target"
-            else
-                rm "$target"
-                echo -e "  ${RED}-${NC} Removed: $target"
-            fi
+tool_dir_name() {
+    local tool="$1"
+    if [ "$tool" = "claude" ]; then
+        echo ".claude"
+    else
+        echo ".cursor"
+    fi
+}
+
+install_agents_for_tool() {
+    local tool="$1"
+    shift
+    local selected_agents=("$@")
+    local tool_dir
+    tool_dir="$(tool_dir_name "$tool")"
+    local target_agents_dir="$BASE_DIR/$tool_dir/agents"
+
+    if [ "$DRY_RUN" = false ]; then
+        mkdir -p "$target_agents_dir"
+    fi
+    echo "$tool agent files:"
+    for agent in "${selected_agents[@]}"; do
+        local source="$SCRIPT_DIR/agents/$agent.md"
+        local target="$target_agents_dir/$agent.md"
+        if [ ! -f "$source" ]; then
+            echo -e "  ${YELLOW}!${NC} Agent not found: $agent"
+            continue
+        fi
+        install_entry "$source" "$target" "$MODE" "file"
+    done
+}
+
+install_file_group_for_tool() {
+    local tool="$1"
+    local group="$2"
+    local tool_dir
+    tool_dir="$(tool_dir_name "$tool")"
+
+    if [ "$group" = "commands" ] || [ "$group" = "skills" ]; then
+        install_entry "$SCRIPT_DIR/$group" "$BASE_DIR/$tool_dir/$group" "$MODE" "dir"
+    fi
+}
+
+ensure_backlog_scaffold() {
+    local backlog_dir="$BASE_DIR/.backlog"
+    echo "project backlog scaffold:"
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/prds"
+        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/plans"
+        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/backlog.md"
+        return
+    fi
+
+    mkdir -p "$backlog_dir/prds" "$backlog_dir/plans"
+    if [ ! -f "$backlog_dir/backlog.md" ]; then
+        cat > "$backlog_dir/backlog.md" <<'EOF'
+## Pending
+
+### [example-feature] Example Feature
+
+- **Priority**: P2
+- **Status**: pending
+- **Description**: Replace this with your first feature idea.
+- **PRD**:
+- **Plan**:
+EOF
+    fi
+    echo -e "  ${GREEN}+${NC} Ensured: $backlog_dir/{prds,plans,backlog.md}"
+}
+
+discover_agents() {
+    local all
+    all=$(ls "$SCRIPT_DIR/agents"/*.md 2>/dev/null || true)
+    if [ -z "$all" ]; then
+        echo ""
+        return
+    fi
+    for file in $all; do
+        basename "$file" .md
+    done
+}
+
+prompt_install_scope() {
+    if [ -n "$BASE_DIR" ]; then
+        return
+    fi
+    if ! is_interactive; then
+        echo -e "${RED}Error: specify --global, --local, or --path${NC}"
+        exit 1
+    fi
+    echo "Install scope:"
+    echo "  1) Global ($HOME)"
+    echo "  2) Local ($(pwd))"
+    echo "  3) Custom path"
+    read -p "Choice [1-3]: " scope_choice
+    case "$scope_choice" in
+        1) BASE_DIR="$HOME" ;;
+        2) BASE_DIR="$(pwd)" ;;
+        3)
+            read -p "Enter path: " BASE_DIR
             ;;
         *)
-            echo -e "  ${YELLOW}!${NC} Skipped (not a symlink): $target"
+            echo "Invalid choice"
+            exit 1
             ;;
     esac
 }
 
-# Show status of a path
+prompt_tools() {
+    if [ -n "$TOOLS" ]; then
+        return
+    fi
+    if ! is_interactive; then
+        TOOLS="all"
+        return
+    fi
+    echo ""
+    echo "Install for which tools?"
+    echo "  1) Claude Code only"
+    echo "  2) Cursor only"
+    echo "  3) Both"
+    read -p "Choice [1-3]: " tools_choice
+    case "$tools_choice" in
+        1) TOOLS="claude" ;;
+        2) TOOLS="cursor" ;;
+        3) TOOLS="all" ;;
+        *)
+            echo "Invalid choice"
+            exit 1
+            ;;
+    esac
+}
+
+prompt_mode() {
+    if [ -n "$MODE" ]; then
+        return
+    fi
+    if ! is_interactive; then
+        MODE="symlink"
+        return
+    fi
+    echo ""
+    echo "Install mode:"
+    echo "  1) symlink (relative)"
+    echo "  2) copy"
+    read -p "Choice [1-2]: " mode_choice
+    case "$mode_choice" in
+        1) MODE="symlink" ;;
+        2) MODE="copy" ;;
+        *)
+            echo "Invalid choice"
+            exit 1
+            ;;
+    esac
+}
+
+prompt_targets_if_needed() {
+    if [ "$AGENTS_REQUESTED" = false ] && [ "$FILES_REQUESTED" = false ]; then
+        if ! is_interactive; then
+            AGENTS_REQUESTED=true
+            FILES_REQUESTED=true
+            return
+        fi
+        echo "What do you want to install?"
+        echo "  1) Agents"
+        echo "  2) Files"
+        echo "  3) Both"
+        read -p "Choice [1-3]: " target_choice
+        case "$target_choice" in
+            1) AGENTS_REQUESTED=true ;;
+            2) FILES_REQUESTED=true ;;
+            3)
+                AGENTS_REQUESTED=true
+                FILES_REQUESTED=true
+                ;;
+            *)
+                echo "Invalid choice"
+                exit 1
+                ;;
+        esac
+    fi
+}
+
+resolve_agent_selection() {
+    local available_agents=()
+    while IFS= read -r line; do
+        [ -n "$line" ] && available_agents+=("$line")
+    done < <(discover_agents)
+
+    if [ "${#available_agents[@]}" -eq 0 ]; then
+        echo -e "${RED}No agents found in $SCRIPT_DIR/agents${NC}"
+        exit 1
+    fi
+
+    if [ -n "$AGENTS_ARG" ]; then
+        split_csv "$AGENTS_ARG"
+        SELECTED_AGENTS=("${OUT_ARRAY[@]}")
+        return
+    fi
+
+    if ! is_interactive; then
+        SELECTED_AGENTS=("${available_agents[@]}")
+        return
+    fi
+
+    echo ""
+    echo "Available agents:"
+    local i=1
+    for name in "${available_agents[@]}"; do
+        echo "  $i) $name"
+        i=$((i + 1))
+    done
+    echo "  a) all"
+    read -p "Select agents (comma-separated indexes or 'a'): " picked
+    if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
+        SELECTED_AGENTS=("${available_agents[@]}")
+        return
+    fi
+
+    split_csv "$picked"
+    SELECTED_AGENTS=()
+    local idx
+    for idx in "${OUT_ARRAY[@]}"; do
+        if [ "$idx" -ge 1 ] 2>/dev/null && [ "$idx" -le "${#available_agents[@]}" ]; then
+            SELECTED_AGENTS+=("${available_agents[$((idx - 1))]}")
+        fi
+    done
+    if [ "${#SELECTED_AGENTS[@]}" -eq 0 ]; then
+        echo -e "${RED}No valid agent selection.${NC}"
+        exit 1
+    fi
+}
+
+resolve_file_selection() {
+    if [ -n "$FILES_ARG" ]; then
+        split_csv "$FILES_ARG"
+        SELECTED_FILE_GROUPS=("${OUT_ARRAY[@]}")
+        return
+    fi
+
+    if ! is_interactive; then
+        SELECTED_FILE_GROUPS=("${DEFAULT_FILES[@]}")
+        return
+    fi
+
+    echo ""
+    echo "Available file groups:"
+    echo "  1) commands"
+    echo "  2) skills"
+    echo "  3) backlog"
+    echo "  a) all"
+    read -p "Select file groups (comma-separated indexes or 'a'): " picked
+    if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
+        SELECTED_FILE_GROUPS=("${AVAILABLE_FILE_GROUPS[@]}")
+        return
+    fi
+
+    split_csv "$picked"
+    SELECTED_FILE_GROUPS=()
+    local idx
+    for idx in "${OUT_ARRAY[@]}"; do
+        case "$idx" in
+            1) SELECTED_FILE_GROUPS+=("commands") ;;
+            2) SELECTED_FILE_GROUPS+=("skills") ;;
+            3) SELECTED_FILE_GROUPS+=("backlog") ;;
+        esac
+    done
+    if [ "${#SELECTED_FILE_GROUPS[@]}" -eq 0 ]; then
+        echo -e "${RED}No valid file group selection.${NC}"
+        exit 1
+    fi
+}
+
 show_status() {
-    local target="$1"
-    local expected_source="$2"
-    local path_type=$(check_path "$target")
-    local name=$(basename "$target")
-    
-    case "$path_type" in
-        none)
-            echo -e "  ${GRAY}○${NC} $name ${GRAY}(not installed)${NC}"
-            ;;
-        symlink)
-            local actual=$(readlink "$target")
-            if [ "$actual" = "$expected_source" ]; then
-                echo -e "  ${GREEN}●${NC} $name ${GRAY}→ $actual${NC}"
-            else
-                echo -e "  ${YELLOW}●${NC} $name ${GRAY}→ $actual ${YELLOW}(unexpected)${NC}"
-            fi
-            ;;
-        *)
-            echo -e "  ${YELLOW}■${NC} $name ${GRAY}($path_type, not symlink)${NC}"
-            ;;
-    esac
+    local base="$1"
+    echo "Base: $base"
+    for tool in claude cursor; do
+        local td
+        td="$(tool_dir_name "$tool")"
+        echo "  $tool:"
+        echo "    agents:  $(path_type "$base/$td/agents")"
+        echo "    commands: $(path_type "$base/$td/commands")"
+        echo "    skills:   $(path_type "$base/$td/skills")"
+    done
+    echo "  project backlog: $(path_type "$base/.backlog")"
 }
 
-# Setup for a specific tool
-setup_tool() {
-    local tool="$1"
-    local base="$2"
-    local tool_dir=$([ "$tool" = "claude" ] && echo ".claude" || echo ".cursor")
-    local tool_name=$([ "$tool" = "claude" ] && echo "Claude Code" || echo "Cursor")
-    
-    echo "$tool_name ($base/$tool_dir):"
-    create_link "$SCRIPT_DIR/agents" "$base/$tool_dir/agents"
-    create_link "$SCRIPT_DIR/commands" "$base/$tool_dir/commands"
-    create_link "$SCRIPT_DIR/skills" "$base/$tool_dir/skills"
-    [ "$tool" = "claude" ] && [ -f "$SCRIPT_DIR/settings/claude.json" ] && \
-        create_link "$SCRIPT_DIR/settings/claude.json" "$base/$tool_dir/settings.json"
-    echo ""
+update_repo() {
+    if [ ! -d "$SCRIPT_DIR/.git" ]; then
+        echo -e "${RED}Error: Not a git repository.${NC}"
+        exit 1
+    fi
+    local before
+    before=$(cd "$SCRIPT_DIR" && git rev-parse --short HEAD)
+    echo "Current: $before"
+    (cd "$SCRIPT_DIR" && git pull --ff-only)
+    local after
+    after=$(cd "$SCRIPT_DIR" && git rev-parse --short HEAD)
+    echo "Updated: $before -> $after"
 }
 
-# Unlink for a specific tool
-unlink_tool() {
-    local tool="$1"
-    local base="$2"
-    local tool_dir=$([ "$tool" = "claude" ] && echo ".claude" || echo ".cursor")
-    local tool_name=$([ "$tool" = "claude" ] && echo "Claude Code" || echo "Cursor")
-    
-    echo "$tool_name ($base/$tool_dir):"
-    remove_link "$base/$tool_dir/agents"
-    remove_link "$base/$tool_dir/commands"
-    remove_link "$base/$tool_dir/skills"
-    [ "$tool" = "claude" ] && remove_link "$base/$tool_dir/settings.json"
-    echo ""
-}
-
-# Status for a specific tool
-status_tool() {
-    local tool="$1"
-    local base="$2"
-    local tool_dir=$([ "$tool" = "claude" ] && echo ".claude" || echo ".cursor")
-    local tool_name=$([ "$tool" = "claude" ] && echo "Claude Code" || echo "Cursor")
-    
-    echo "$tool_name ($base/$tool_dir):"
-    show_status "$base/$tool_dir/agents" "$SCRIPT_DIR/agents"
-    show_status "$base/$tool_dir/commands" "$SCRIPT_DIR/commands"
-    show_status "$base/$tool_dir/skills" "$SCRIPT_DIR/skills"
-    [ "$tool" = "claude" ] && show_status "$base/$tool_dir/settings.json" "$SCRIPT_DIR/settings/claude.json"
-    echo ""
-}
-
-# Parse command line arguments
-COMMAND="install"
 while [ $# -gt 0 ]; do
     case "$1" in
-        install|status|unlink|update|validate)
+        install|status|update)
             COMMAND="$1"
+            ;;
+        --agents)
+            AGENTS_REQUESTED=true
+            if [ -n "$2" ] && [[ "$2" != --* ]] && [[ "$2" != "install" ]] && [[ "$2" != "status" ]] && [[ "$2" != "update" ]]; then
+                AGENTS_ARG="$2"
+                shift
+            fi
+            ;;
+        --files)
+            FILES_REQUESTED=true
+            if [ -n "$2" ] && [[ "$2" != --* ]] && [[ "$2" != "install" ]] && [[ "$2" != "status" ]] && [[ "$2" != "update" ]]; then
+                FILES_ARG="$2"
+                shift
+            fi
             ;;
         --global|-g)
             BASE_DIR="$HOME"
@@ -313,11 +471,16 @@ while [ $# -gt 0 ]; do
             shift
             BASE_DIR="$1"
             ;;
+        --mode)
+            shift
+            MODE="$1"
+            ;;
+        --tools)
+            shift
+            TOOLS="$1"
+            ;;
         --dry-run|-d)
             DRY_RUN=true
-            ;;
-        claude|cursor|all)
-            TOOLS="$1"
             ;;
         --help|-h)
             usage
@@ -332,146 +495,79 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-# Check if running interactively
-is_interactive() {
-    [ -t 0 ] && [ -t 1 ]
-}
-
-# Interactive prompts if needed
-if [ -z "$BASE_DIR" ] && [ "$COMMAND" != "status" ]; then
-    if ! is_interactive; then
-        echo -e "${RED}Error: No install location specified.${NC}"
-        echo ""
-        echo "When running non-interactively, you must specify a location:"
-        echo "  ./setup.sh --global all    # Install to home directory"
-        echo "  ./setup.sh --local all     # Install to current directory"
-        echo ""
-        exit 1
-    fi
-    
-    echo -e "${CYAN}Agentfiles Setup${NC}"
-    echo ""
-    echo "Where do you want to $COMMAND?"
-    echo ""
-    echo "  1) Global ($HOME) - Available in all projects"
-    echo "  2) Local ($(pwd)) - This project only"
-    echo "  3) Custom path"
-    echo ""
-    read -p "Choice [1-3]: " location_choice
-    echo ""
-    
-    case "$location_choice" in
-        1) BASE_DIR="$HOME" ;;
-        2) BASE_DIR="$(pwd)" ;;
-        3)
-            read -p "Enter path: " BASE_DIR
-            ;;
-        *)
-            echo "Invalid choice"
-            exit 1
-            ;;
-    esac
-fi
-
-# Handle standalone commands
 if [ "$COMMAND" = "status" ]; then
-    echo -e "${CYAN}Agentfiles Status${NC}"
-    echo ""
-    echo "Global ($HOME):"
-    echo ""
-    status_tool "claude" "$HOME"
-    status_tool "cursor" "$HOME"
-    
+    echo -e "${CYAN}Agentfiles status${NC}"
+    show_status "$HOME"
     if [ "$(pwd)" != "$HOME" ]; then
-        echo "Local ($(pwd)):"
         echo ""
-        status_tool "claude" "$(pwd)"
-        status_tool "cursor" "$(pwd)"
+        show_status "$(pwd)"
     fi
     exit 0
 fi
 
 if [ "$COMMAND" = "update" ]; then
     update_repo
-    exit $?
+    exit 0
 fi
 
-if [ "$COMMAND" = "validate" ]; then
-    validate_repo
-    exit $?
+prompt_targets_if_needed
+prompt_install_scope
+prompt_tools
+prompt_mode
+
+if [ "$MODE" != "symlink" ] && [ "$MODE" != "copy" ]; then
+    echo -e "${RED}Invalid --mode. Use symlink or copy.${NC}"
+    exit 1
 fi
 
-if [ -z "$TOOLS" ]; then
-    if ! is_interactive; then
-        echo -e "${RED}Error: No tools specified.${NC}"
-        echo ""
-        echo "When running non-interactively, you must specify tools:"
-        echo "  ./setup.sh --global all      # Both Claude Code and Cursor"
-        echo "  ./setup.sh --global claude   # Claude Code only"
-        echo "  ./setup.sh --global cursor   # Cursor only"
-        echo ""
-        exit 1
-    fi
-    
-    echo "Which tools?"
-    echo ""
-    echo "  1) Claude Code only"
-    echo "  2) Cursor only"
-    echo "  3) Both"
-    echo ""
-    read -p "Choice [1-3]: " tools_choice
-    echo ""
-    
-    case "$tools_choice" in
-        1) TOOLS="claude" ;;
-        2) TOOLS="cursor" ;;
-        3) TOOLS="all" ;;
-        *)
-            echo "Invalid choice"
-            exit 1
-            ;;
-    esac
+if [ "$TOOLS" != "claude" ] && [ "$TOOLS" != "cursor" ] && [ "$TOOLS" != "all" ]; then
+    echo -e "${RED}Invalid --tools. Use claude, cursor, or all.${NC}"
+    exit 1
 fi
 
-# Execute command
-case "$COMMAND" in
-    install)
-        # Validate repo structure first
-        for dir in "agents" "commands" "skills"; do
-            if [ ! -d "$SCRIPT_DIR/$dir" ]; then
-                echo -e "${RED}Error: Required directory '$dir' not found.${NC}"
-                echo "Run './setup.sh validate' to check repo structure."
-                exit 1
-            fi
+if [ "$AGENTS_REQUESTED" = true ]; then
+    resolve_agent_selection
+fi
+
+if [ "$FILES_REQUESTED" = true ]; then
+    resolve_file_selection
+fi
+
+echo -e "${CYAN}Installing to: $BASE_DIR${NC}"
+echo -e "Mode: ${GRAY}$MODE${NC} | Tools: ${GRAY}$TOOLS${NC}"
+
+TOOLS_LIST=()
+if [ "$TOOLS" = "all" ]; then
+    TOOLS_LIST=("claude" "cursor")
+else
+    TOOLS_LIST=("$TOOLS")
+fi
+
+if [ "$AGENTS_REQUESTED" = true ]; then
+    echo ""
+    echo -e "${CYAN}Agents${NC}: ${SELECTED_AGENTS[*]}"
+    for tool in "${TOOLS_LIST[@]}"; do
+        install_agents_for_tool "$tool" "${SELECTED_AGENTS[@]}"
+    done
+fi
+
+if [ "$FILES_REQUESTED" = true ]; then
+    echo ""
+    echo -e "${CYAN}Files${NC}: ${SELECTED_FILE_GROUPS[*]}"
+    for group in "${SELECTED_FILE_GROUPS[@]}"; do
+        if [ "$group" = "backlog" ]; then
+            ensure_backlog_scaffold
+            continue
+        fi
+        for tool in "${TOOLS_LIST[@]}"; do
+            echo "$tool $group:"
+            install_file_group_for_tool "$tool" "$group"
         done
-        
-        [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run mode - no changes will be made${NC}\n"
-        
-        if [ "$TOOLS" = "claude" ] || [ "$TOOLS" = "all" ]; then
-            setup_tool "claude" "$BASE_DIR"
-        fi
-        if [ "$TOOLS" = "cursor" ] || [ "$TOOLS" = "all" ]; then
-            setup_tool "cursor" "$BASE_DIR"
-        fi
-        
-        if [ "$DRY_RUN" = true ]; then
-            echo -e "${BLUE}Dry run complete. No changes were made.${NC}"
-        else
-            echo -e "${GREEN}Done!${NC}"
-            echo ""
-            echo -e "${GRAY}Tip: Run './setup.sh update' to get the latest changes.${NC}"
-        fi
-        ;;
-    unlink)
-        [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run mode - no changes will be made${NC}\n"
-        
-        if [ "$TOOLS" = "claude" ] || [ "$TOOLS" = "all" ]; then
-            unlink_tool "claude" "$BASE_DIR"
-        fi
-        if [ "$TOOLS" = "cursor" ] || [ "$TOOLS" = "all" ]; then
-            unlink_tool "cursor" "$BASE_DIR"
-        fi
-        
-        [ "$DRY_RUN" = true ] && echo -e "${BLUE}Dry run complete. No changes were made.${NC}" || echo -e "${GREEN}Done!${NC}"
-        ;;
-esac
+    done
+fi
+
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${BLUE}Dry-run complete. No changes were made.${NC}"
+else
+    echo -e "${GREEN}Done.${NC}"
+fi

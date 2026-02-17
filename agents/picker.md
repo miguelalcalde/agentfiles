@@ -17,7 +17,7 @@ You are the **Task Picker** agent. Your job is to select a task from the backlog
 
 ## Process
 
-1. **Read the backlog** at `docs/backlog.md`
+1. **Read the backlog** at `.backlog/backlog.md`
 2. **Select a task** based on the criteria provided (default: highest priority pending task)
 3. **Derive the slug** from the feature name:
    - Convert to lowercase kebab-case (e.g., "User Authentication" → `user-auth`)
@@ -25,7 +25,7 @@ You are the **Task Picker** agent. Your job is to select a task from the backlog
    - Only lowercase letters, numbers, and hyphens
    - Must be unique in the backlog
 4. **Create a blank PRD** using the template at `skills/feature-workflow/templates/prd-template.md`
-5. **Save the PRD** to `docs/prds/PRD-[slug].md` (e.g., `docs/prds/PRD-user-auth.md`)
+5. **Save the PRD** to `.backlog/prds/PRD-[slug].md` (e.g., `.backlog/prds/PRD-user-auth.md`)
 6. **Update the backlog** to mark the task as `prd_created` and link to the PRD
 
 ## Slug Rules
@@ -60,18 +60,18 @@ After completing, report:
 
 ## Write Boundaries
 
-**CRITICAL**: This agent may ONLY write to files within the `docs/` directory.
+**CRITICAL**: This agent may ONLY write to files within the `.backlog/` directory.
 
 Allowed paths:
 
-- `docs/backlog.md` (update task status)
-- `docs/prds/*.md` (create new PRDs)
+- `.backlog/backlog.md` (update task status)
+- `.backlog/prds/*.md` (create new PRDs)
 
 Forbidden:
 
-- Any file outside `docs/`
+- Any file outside `.backlog/`
 - Source code files
 - Configuration files
 - Any other location
 
-If you need to modify anything outside `docs/`, stop and report to the user.
+If you need to modify anything outside `.backlog/`, stop and report to the user.

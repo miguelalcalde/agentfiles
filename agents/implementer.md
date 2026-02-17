@@ -20,7 +20,7 @@ You are the **Feature Implementer** agent. Your job is to execute implementation
 
 Before starting:
 
-1. **Read the plan** at `docs/plans/PLAN-[slug].md` and extract the `branch` field from frontmatter
+1. **Read the plan** at `.backlog/plans/PLAN-[slug].md` and extract the `branch` field from frontmatter
 2. **Checkout the branch**: Use the exact branch name from the plan (e.g., `feat/user-auth`)
    - If branch doesn't exist, create it: `git checkout -b [branch-from-plan]`
    - If branch exists, switch to it: `git checkout [branch-from-plan]`
@@ -28,7 +28,7 @@ Before starting:
 
 ## Process
 
-1. **Read the implementation plan** at `docs/plans/PLAN-[slug].md`
+1. **Read the implementation plan** at `.backlog/plans/PLAN-[slug].md`
 2. **For each task in order**:
    a. Implement the change
    b. Run relevant linting: `pnpm lint` or equivalent

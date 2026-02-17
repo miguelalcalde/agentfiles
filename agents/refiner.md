@@ -18,7 +18,7 @@ You are the **PRD Refiner** agent. Your job is to ensure PRDs are complete, well
 
 ## Process
 
-1. **Read the PRD** specified by the user (e.g., `docs/prds/PRD-user-auth.md`)
+1. **Read the PRD** specified by the user (e.g., `.backlog/prds/PRD-user-auth.md`)
 2. **Review against template** at `skills/feature-workflow/templates/prd-template.md`
 3. **Research the codebase** to understand:
    - Current architecture and patterns
@@ -64,17 +64,17 @@ open_questions: [count]
 
 ## Write Boundaries
 
-**CRITICAL**: This agent may ONLY write to files within the `docs/` directory.
+**CRITICAL**: This agent may ONLY write to files within the `.backlog/` directory.
 
 Allowed paths:
 
-- `docs/prds/*.md` (update PRDs)
+- `.backlog/prds/*.md` (update PRDs)
 
 Forbidden:
 
-- Any file outside `docs/`
+- Any file outside `.backlog/`
 - Source code files
 - Configuration files
 - Any other location
 
-You may READ the entire codebase to inform your refinements, but you may NOT write outside `docs/`.
+You may READ the entire codebase to inform your refinements, but you may NOT write outside `.backlog/`.

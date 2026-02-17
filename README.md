@@ -8,10 +8,10 @@ Portable agents, commands, and skills for Claude Code and Cursor. Fork this repo
 
 ## Quick Start
 
-**One-liner install:**
+**One-liner bootstrap (then interactive setup):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/miguelalcalde/ralphie/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/miguelalcalde/agentfiles/main/install.sh | bash
 ```
 
 **Or clone manually:**
@@ -88,30 +88,31 @@ This separation enables both interactive and programmatic use.
 ## Setup Commands
 
 ```bash
-./setup.sh                      # Interactive install
-./setup.sh --global cursor      # Global install, Cursor only
-./setup.sh --local all          # Local install (current dir), both tools
-./setup.sh --dry-run            # Preview changes without making them
-./setup.sh status               # Show what's installed where
-./setup.sh update               # Pull latest changes from git
-./setup.sh validate             # Check repo structure is valid
-./setup.sh unlink --global      # Remove global symlinks
+./setup.sh                                    # Fully interactive
+./setup.sh --agents                           # Interactive: pick agents
+./setup.sh --agents picker,planner --global --mode symlink --tools all
+./setup.sh --files commands,skills --global --mode symlink --tools all
+./setup.sh --files backlog --local --mode copy
+./setup.sh status                             # Show current install status
+./setup.sh update                             # Pull latest changes from git
 ```
 
 ## What Gets Installed
 
-The setup script creates symlinks from your cloned repo to the tool config directories:
+The setup script can install by `symlink` (relative links) or `copy`.
+
+Typical global setup:
 
 ```
 ~/.claude/
-├── agents/       → ~/.agentfiles/agents
+├── agents/*.md   → ~/.agentfiles/agents/*.md (selected agents)
 ├── commands/     → ~/.agentfiles/commands
 ├── skills/       → ~/.agentfiles/skills
 └── settings.json → ~/.agentfiles/settings/claude.json
 
 ~/.cursor/
-├── agents/       → ~/.agentfiles/agents
-├── commands/     → ~/.agentfiles/commands  (not used by Cursor, but harmless)
+├── agents/*.md   → ~/.agentfiles/agents/*.md (selected agents)
+├── commands/     → ~/.agentfiles/commands
 └── skills/       → ~/.agentfiles/skills
 ```
 
@@ -171,11 +172,11 @@ Slugs are lowercase kebab-case, max 30 characters.
 
 ## Per-Project Setup
 
-Each project using these agents needs a `docs/` folder:
+Each project using these agents needs a `.backlog/` folder:
 
 ```
 your-project/
-└── docs/
+└── .backlog/
     ├── backlog.md
     ├── prds/
     │   └── PRD-user-auth.md

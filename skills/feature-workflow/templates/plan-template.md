@@ -1,6 +1,6 @@
 ---
 slug: [feature-slug]
-prd: docs/prds/PRD-[slug].md
+prd: .backlog/prds/PRD-[slug].md
 status: draft | needs_review | approved | implemented
 planned_at: [timestamp]
 planned_by: agent:planner
