@@ -103,6 +103,7 @@ This separation enables both interactive and programmatic use.
 
 When running interactively, `setup.sh` uses built-in plain terminal prompts (no external dependencies).
 File groups are auto-discovered from top-level directories excluding reserved directories (`agents`, `commands`, `skills`, `settings`) and hidden directories.
+When installed, file groups are materialized as hidden root folders (for example `backlog` -> `.backlog`).
 
 ## What Gets Installed
 
@@ -111,16 +112,21 @@ The setup script can install by `symlink` (relative links) or `copy`.
 Typical global setup:
 
 ```
+~/.agents/
+├── manifest.json
+├── agents/
+├── commands/
+└── skills/
+
 ~/.claude/
-├── agents/*.md   → ~/.agentfiles/agents/*.md (selected agents)
-├── commands/     → ~/.agentfiles/commands
-├── skills/       → ~/.agentfiles/skills
-└── settings.json → ~/.agentfiles/settings/claude.json
+├── agents/*.md   → ~/.agents/agents/*.md (selected agents)
+├── commands/     → ~/.agents/commands/*.md (selected commands)
+└── skills/       → ~/.agents/skills/* (selected skills)
 
 ~/.cursor/
-├── agents/*.md   → ~/.agentfiles/agents/*.md (selected agents)
-├── commands/     → ~/.agentfiles/commands
-└── skills/       → ~/.agentfiles/skills
+├── agents/*.md   → ~/.agents/agents/*.md (selected agents)
+├── commands/     → ~/.agents/commands/*.md (selected commands)
+└── skills/       → ~/.agents/skills/* (selected skills)
 ```
 
 ## Workflow

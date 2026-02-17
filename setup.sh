@@ -20,6 +20,7 @@ BASE_DIR=""
 TOOLS=""
 MODE=""
 DRY_RUN=false
+CANONICAL_ROOT=""
 
 AGENTS_REQUESTED=false
 FILES_REQUESTED=false
@@ -198,9 +199,9 @@ install_agents_for_tool() {
     fi
     echo "$tool agent files:"
     for agent in "${selected_agents[@]}"; do
-        local source="$SCRIPT_DIR/agents/$agent.md"
+        local source="$CANONICAL_ROOT/agents/$agent.md"
         local target="$target_agents_dir/$agent.md"
-        if [ ! -f "$source" ]; then
+        if [ "$DRY_RUN" = false ] && [ ! -f "$source" ]; then
             echo -e "  ${YELLOW}!${NC} Agent not found: $agent"
             continue
         fi
@@ -210,18 +211,15 @@ install_agents_for_tool() {
 
 map_file_group_target() {
     local group="$1"
-    if [ "$group" = "backlog" ]; then
-        echo ".backlog"
-    else
-        echo "$group"
-    fi
+    echo ".$group"
 }
 
 install_file_group() {
     local group="$1"
     local target_name
     target_name="$(map_file_group_target "$group")"
-    install_entry "$SCRIPT_DIR/$group" "$BASE_DIR/$target_name" "$MODE" "dir"
+    # File groups are root-level artifacts; always materialize in place.
+    install_entry "$SCRIPT_DIR/$group" "$BASE_DIR/$target_name" "copy" "dir"
 }
 
 discover_agents() {
@@ -641,9 +639,9 @@ install_skills_for_tool() {
     fi
     echo "$tool skills:"
     for skill in "${selected_skills[@]}"; do
-        local source="$SCRIPT_DIR/skills/$skill"
+        local source="$CANONICAL_ROOT/skills/$skill"
         local target="$target_skills_dir/$skill"
-        if [ ! -f "$source/SKILL.md" ]; then
+        if [ "$DRY_RUN" = false ] && [ ! -f "$source/SKILL.md" ]; then
             echo -e "  ${YELLOW}!${NC} Skill not found: $skill"
             continue
         fi
@@ -664,14 +662,132 @@ install_commands_for_tool() {
     fi
     echo "$tool command files:"
     for cmd in "${selected_commands[@]}"; do
-        local source="$SCRIPT_DIR/commands/$cmd.md"
+        local source="$CANONICAL_ROOT/commands/$cmd.md"
         local target="$target_commands_dir/$cmd.md"
-        if [ ! -f "$source" ]; then
+        if [ "$DRY_RUN" = false ] && [ ! -f "$source" ]; then
             echo -e "  ${YELLOW}!${NC} Command not found: $cmd"
             continue
         fi
         install_entry "$source" "$target" "$MODE" "file"
     done
+}
+
+resolve_canonical_root() {
+    if [ "$BASE_DIR" = "$HOME" ]; then
+        CANONICAL_ROOT="$HOME/.agents"
+    else
+        CANONICAL_ROOT="$BASE_DIR/.agents"
+    fi
+}
+
+stage_agents_to_canonical() {
+    local selected_agents=("$@")
+    [ "${#selected_agents[@]}" -gt 0 ] || return
+    local target_dir="$CANONICAL_ROOT/agents"
+    [ "$DRY_RUN" = false ] && mkdir -p "$target_dir"
+    echo "canonical agents:"
+    local agent
+    for agent in "${selected_agents[@]}"; do
+        local source="$SCRIPT_DIR/agents/$agent.md"
+        local target="$target_dir/$agent.md"
+        if [ ! -f "$source" ]; then
+            echo -e "  ${YELLOW}!${NC} Agent not found: $agent"
+            continue
+        fi
+        install_entry "$source" "$target" "copy" "file"
+    done
+}
+
+stage_skills_to_canonical() {
+    local selected_skills=("$@")
+    [ "${#selected_skills[@]}" -gt 0 ] || return
+    local target_dir="$CANONICAL_ROOT/skills"
+    [ "$DRY_RUN" = false ] && mkdir -p "$target_dir"
+    echo "canonical skills:"
+    local skill
+    for skill in "${selected_skills[@]}"; do
+        local source="$SCRIPT_DIR/skills/$skill"
+        local target="$target_dir/$skill"
+        if [ ! -f "$source/SKILL.md" ]; then
+            echo -e "  ${YELLOW}!${NC} Skill not found: $skill"
+            continue
+        fi
+        install_entry "$source" "$target" "copy" "dir"
+    done
+}
+
+stage_commands_to_canonical() {
+    local selected_commands=("$@")
+    [ "${#selected_commands[@]}" -gt 0 ] || return
+    local target_dir="$CANONICAL_ROOT/commands"
+    [ "$DRY_RUN" = false ] && mkdir -p "$target_dir"
+    echo "canonical commands:"
+    local cmd
+    for cmd in "${selected_commands[@]}"; do
+        local source="$SCRIPT_DIR/commands/$cmd.md"
+        local target="$target_dir/$cmd.md"
+        if [ ! -f "$source" ]; then
+            echo -e "  ${YELLOW}!${NC} Command not found: $cmd"
+            continue
+        fi
+        install_entry "$source" "$target" "copy" "file"
+    done
+}
+
+json_array_from_list() {
+    local first=true
+    printf "["
+    local item
+    for item in "$@"; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            printf ", "
+        fi
+        item="${item//\\/\\\\}"
+        item="${item//\"/\\\"}"
+        printf "\"%s\"" "$item"
+    done
+    printf "]"
+}
+
+write_manifest() {
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "  ${BLUE}[dry-run]${NC} write manifest: $CANONICAL_ROOT/manifest.json"
+        return
+    fi
+
+    mkdir -p "$CANONICAL_ROOT"
+
+    local scope="local"
+    if [ "$BASE_DIR" = "$HOME" ]; then
+        scope="global"
+    fi
+
+    local agents_json skills_json commands_json files_json
+    agents_json=$(json_array_from_list "${SELECTED_AGENTS[@]}")
+    skills_json=$(json_array_from_list "${SELECTED_SKILLS[@]}")
+    commands_json=$(json_array_from_list "${SELECTED_COMMANDS[@]}")
+    files_json=$(json_array_from_list "${SELECTED_FILE_GROUPS[@]}")
+
+    cat > "$CANONICAL_ROOT/manifest.json" <<EOF
+{
+  "version": 1,
+  "installed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "scope": "$scope",
+  "base_dir": "$BASE_DIR",
+  "canonical_root": "$CANONICAL_ROOT",
+  "mode": "$MODE",
+  "tools": "$TOOLS",
+  "selection": {
+    "agents": $agents_json,
+    "skills": $skills_json,
+    "commands": $commands_json,
+    "files": $files_json
+  }
+}
+EOF
+    echo -e "  ${GREEN}+${NC} Wrote: $CANONICAL_ROOT/manifest.json"
 }
 
 show_status() {
@@ -822,8 +938,10 @@ if [ "$FILES_REQUESTED" = true ]; then
 fi
 
 echo -e "${CYAN}Installing to: $BASE_DIR${NC}"
+resolve_canonical_root
 if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
     echo -e "Mode: ${GRAY}$MODE${NC} | Tools: ${GRAY}$TOOLS${NC}"
+    echo -e "Canonical root: ${GRAY}$CANONICAL_ROOT${NC}"
 else
     echo -e "Mode: ${GRAY}$MODE${NC}"
 fi
@@ -840,6 +958,7 @@ fi
 if [ "$AGENTS_REQUESTED" = true ]; then
     echo ""
     echo -e "${CYAN}Agents${NC}: ${SELECTED_AGENTS[*]}"
+    stage_agents_to_canonical "${SELECTED_AGENTS[@]}"
     for tool in "${TOOLS_LIST[@]}"; do
         install_agents_for_tool "$tool" "${SELECTED_AGENTS[@]}"
     done
@@ -848,6 +967,7 @@ fi
 if [ "$SKILLS_REQUESTED" = true ]; then
     echo ""
     echo -e "${CYAN}Skills${NC}: ${SELECTED_SKILLS[*]}"
+    stage_skills_to_canonical "${SELECTED_SKILLS[@]}"
     for tool in "${TOOLS_LIST[@]}"; do
         install_skills_for_tool "$tool" "${SELECTED_SKILLS[@]}"
     done
@@ -856,6 +976,7 @@ fi
 if [ "$COMMANDS_REQUESTED" = true ]; then
     echo ""
     echo -e "${CYAN}Commands${NC}: ${SELECTED_COMMANDS[*]}"
+    stage_commands_to_canonical "${SELECTED_COMMANDS[@]}"
     for tool in "${TOOLS_LIST[@]}"; do
         install_commands_for_tool "$tool" "${SELECTED_COMMANDS[@]}"
     done
@@ -870,6 +991,10 @@ if [ "$FILES_REQUESTED" = true ]; then
         install_file_group "$group"
     done
 fi
+
+echo ""
+echo -e "${CYAN}Manifest${NC}:"
+write_manifest
 
 if [ "$DRY_RUN" = true ]; then
     echo -e "${BLUE}Dry-run complete. No changes were made.${NC}"
