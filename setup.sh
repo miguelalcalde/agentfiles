@@ -21,6 +21,7 @@ TOOLS=""
 MODE=""
 DRY_RUN=false
 CANONICAL_ROOT=""
+OVERWRITE_EXISTING=""
 
 AGENTS_REQUESTED=false
 FILES_REQUESTED=false
@@ -151,8 +152,9 @@ confirm_replace() {
         echo "no"
         return
     fi
-    prompt_read reply "Replace existing path '$target'? [y/N]: "
-    if [ "$reply" = "y" ] || [ "$reply" = "Y" ]; then
+
+    # Interactive runs use a single overwrite policy prompt for the whole install.
+    if [ "$OVERWRITE_EXISTING" = "true" ]; then
         echo "yes"
     else
         echo "no"
@@ -377,6 +379,28 @@ prompt_mode() {
         *)
             echo "Invalid choice"
             exit 1
+            ;;
+    esac
+}
+
+prompt_overwrite_policy() {
+    if ! is_interactive; then
+        OVERWRITE_EXISTING="false"
+        return
+    fi
+
+    if [ -n "$OVERWRITE_EXISTING" ]; then
+        return
+    fi
+
+    echo ""
+    prompt_read overwrite_choice "Overwrite existing paths when present? [y/N]: "
+    case "$overwrite_choice" in
+        y|Y|yes|YES|Yes)
+            OVERWRITE_EXISTING="true"
+            ;;
+        *)
+            OVERWRITE_EXISTING="false"
             ;;
     esac
 }
@@ -940,6 +964,7 @@ if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMA
     prompt_tools
 fi
 prompt_mode
+prompt_overwrite_policy
 
 if [ "$MODE" != "symlink" ] && [ "$MODE" != "copy" ]; then
     echo -e "${RED}Invalid --mode. Use symlink or copy.${NC}"
