@@ -4,7 +4,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_URL="https://github.com/miguelalcalde/agentfiles.git"
-INSTALL_DIR="$HOME/.agentfiles"
+AGENTS_HOME="$HOME/.agents"
+INSTALL_DIR="$AGENTS_HOME/repo"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -32,6 +33,7 @@ AGENTS_ARG=""
 FILES_ARG=""
 SKILLS_ARG=""
 COMMANDS_ARG=""
+ORIGINAL_ARGS=("$@")
 
 ensure_repo_checkout() {
     if [ -d "$SCRIPT_DIR/agents" ] && [ -d "$SCRIPT_DIR/commands" ] && [ -d "$SCRIPT_DIR/skills" ]; then
@@ -39,7 +41,7 @@ ensure_repo_checkout() {
     fi
 
     echo -e "${CYAN}Agentfiles bootstrap${NC}"
-    echo -e "Installing to ${GRAY}$INSTALL_DIR${NC}"
+    echo -e "Bootstrapping source repo to ${GRAY}$INSTALL_DIR${NC}"
     echo ""
 
     if ! command -v git &> /dev/null; then
@@ -47,6 +49,7 @@ ensure_repo_checkout() {
         exit 1
     fi
 
+    mkdir -p "$(dirname "$INSTALL_DIR")"
     if [ -d "$INSTALL_DIR/.git" ]; then
         echo -e "${YELLOW}Existing installation found.${NC} Updating..."
         (cd "$INSTALL_DIR" && git pull --ff-only) || true
@@ -969,7 +972,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-ensure_repo_checkout "$@"
+ensure_repo_checkout "${ORIGINAL_ARGS[@]}"
 print_verbose_diagnostics
 
 if [ "$COMMAND" = "status" ]; then
