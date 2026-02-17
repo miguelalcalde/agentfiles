@@ -279,8 +279,9 @@ prompt_install_scope() {
         return
     fi
     if ! is_interactive; then
-        echo -e "${RED}Error: specify --global, --local, or --path${NC}"
-        exit 1
+        BASE_DIR="$HOME"
+        echo -e "${YELLOW}Non-interactive run detected; defaulting to --global (${BASE_DIR}).${NC}"
+        return
     fi
     echo ""
     echo -e "${BOLD}Install scope${NC}"
