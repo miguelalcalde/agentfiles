@@ -92,15 +92,20 @@ usage() {
 }
 
 is_interactive() {
-    [ -t 0 ] && [ -t 1 ]
+    # Treat piped execution (e.g. curl | bash) as interactive when a terminal is available.
+    ([ -t 0 ] && [ -t 1 ]) || ([ -t 1 ] && [ -r /dev/tty ])
 }
 
-ensure_tty_stdin() {
-    # `curl ... | bash` pipes script content into stdin, which disables prompts.
-    # Reattach stdin to the user's terminal when available so interactive prompts still work.
-    if [ ! -t 0 ] && [ -t 1 ] && [ -r /dev/tty ]; then
-        exec < /dev/tty
+prompt_read() {
+    local __var_name="$1"
+    local __prompt="$2"
+    local __value=""
+    if [ -r /dev/tty ]; then
+        IFS= read -r -p "$__prompt" __value < /dev/tty
+    else
+        IFS= read -r -p "$__prompt" __value
     fi
+    printf -v "$__var_name" '%s' "$__value"
 }
 
 split_csv() {
@@ -134,7 +139,7 @@ confirm_replace() {
         echo "no"
         return
     fi
-    read -p "Replace existing path '$target'? [y/N]: " reply
+    prompt_read reply "Replace existing path '$target'? [y/N]: "
     if [ "$reply" = "y" ] || [ "$reply" = "Y" ]; then
         echo "yes"
     else
@@ -297,13 +302,13 @@ prompt_install_scope() {
     echo "  2) Local ($(pwd))"
     echo "  3) Custom path"
     echo ""
-    read -p "Choice [1-3] (default: 2 - local/project): " scope_choice
+    prompt_read scope_choice "Choice [1-3] (default: 2 - local/project): "
     scope_choice="${scope_choice:-2}"
     case "$scope_choice" in
         1) BASE_DIR="$HOME" ;;
         2) BASE_DIR="$(pwd)" ;;
         3)
-            read -p "Enter path: " BASE_DIR
+            prompt_read BASE_DIR "Enter path: "
             ;;
         *)
             echo "Invalid choice"
@@ -326,7 +331,7 @@ prompt_tools() {
     echo "  2) Cursor only"
     echo "  a) all (both Claude and Cursor)"
     echo ""
-    read -p "Choice [1-2 or a] (default: a - all): " tools_choice
+    prompt_read tools_choice "Choice [1-2 or a] (default: a - all): "
     tools_choice="${tools_choice:-a}"
     case "$tools_choice" in
         1) TOOLS="claude" ;;
@@ -352,7 +357,7 @@ prompt_mode() {
     echo "  1) symlink (relative)"
     echo "  2) copy"
     echo ""
-    read -p "Choice [1-2] (default: 1 - symlink): " mode_choice
+    prompt_read mode_choice "Choice [1-2] (default: 1 - symlink): "
     mode_choice="${mode_choice:-1}"
     case "$mode_choice" in
         1) MODE="symlink" ;;
@@ -381,7 +386,7 @@ prompt_targets_if_needed() {
         echo "  4) Files"
         echo "  a) all"
         echo ""
-        read -p "Choice [1-4 or a] (default: a - all): " target_choice
+        prompt_read target_choice "Choice [1-4 or a] (default: a - all): "
         target_choice="${target_choice:-a}"
         case "$target_choice" in
             1) AGENTS_REQUESTED=true ;;
@@ -438,7 +443,7 @@ resolve_agent_selection() {
     done
     echo "  a) all"
     echo ""
-    read -p "Select agents (comma-separated indexes or 'a', default: a): " picked
+    prompt_read picked "Select agents (comma-separated indexes or 'a', default: a): "
     picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_AGENTS=("${available_agents[@]}")
@@ -512,7 +517,7 @@ resolve_file_selection() {
     done
     echo "  a) all"
     echo ""
-    read -p "Select file groups (comma-separated indexes or 'a', default: a): " picked
+    prompt_read picked "Select file groups (comma-separated indexes or 'a', default: a): "
     picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_FILE_GROUPS=("${available_groups[@]}")
@@ -563,7 +568,7 @@ resolve_skills_selection() {
     done
     echo "  a) all"
     echo ""
-    read -p "Select skills (comma-separated indexes or 'a', default: a): " picked
+    prompt_read picked "Select skills (comma-separated indexes or 'a', default: a): "
     picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_SKILLS=("${available_skills[@]}")
@@ -614,7 +619,7 @@ resolve_commands_selection() {
     done
     echo "  a) all"
     echo ""
-    read -p "Select commands (comma-separated indexes or 'a', default: a): " picked
+    prompt_read picked "Select commands (comma-separated indexes or 'a', default: a): "
     picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
         SELECTED_COMMANDS=("${available_commands[@]}")
@@ -910,8 +915,6 @@ if [ "$COMMAND" = "update" ]; then
     update_repo
     exit 0
 fi
-
-ensure_tty_stdin
 
 prompt_targets_if_needed
 prompt_install_scope
