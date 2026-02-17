@@ -1,3 +1,11 @@
+---
+name: readme-demo
+description: |
+  Generate README.md files for demo/learning repositories with exploration guides and tech stack analysis.
+  Use when the user wants to create a README for a demo, tutorial, or educational repository.
+disable-model-invocation: true
+---
+
 # readme-demo
 
 You are generating a README.md for a **demo/learning repository**. This is NOT a library or production tool - it's an educational playground that developers can fork to explore and experiment with.

@@ -1,5 +1,4 @@
 {
-  "model": "claude-sonnet-4-20250514",
   "permissions": {
     "allow": [
       "Read",
@@ -12,7 +11,6 @@
       "Bash(git checkout *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)",
       "Bash(pnpm *)",
       "Bash(npm *)",
       "NotebookEdit",
@@ -20,8 +18,14 @@
       "TodoWrite",
       "WebSearch",
       "Skill",
-      "MCPSearch"
+      "MCPSearch",
+      "Bash(del:*)"
     ],
-    "deny": ["Bash(git push --force*)", "Bash(git push -f*)", "Bash(rm -rf *)"]
-  }
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "model": "claude-sonnet-4-20250514"
 }

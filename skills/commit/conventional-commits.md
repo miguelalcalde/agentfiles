@@ -1,16 +1,3 @@
-# commit
-
-
-ROLE: You are an expert developer
-Your task is to study and understand the changes that the user is going to commit, and write up a commit based on the spec below: Conventional commits 1.0.0
-
-Edge cases: 
-1. If there are no files staged, assume all changes will be commited.
-2. If changes are staged, make sure the commit only references the commited files.
-
-
----
-
 Conventional Commits 1.0.0
 
 ## Summary
@@ -103,7 +90,7 @@ Refs: #123
 
 ## Specification
 
-The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
 
 1. Commits MUST be prefixed with a type, which consists of a noun, `feat`, `fix`, etc., followed
   by the OPTIONAL scope, OPTIONAL `!`, and REQUIRED terminal colon and space.
@@ -156,7 +143,7 @@ Any casing may be used, but it's best to be consistent.
 
 Go back and make multiple commits whenever possible. Part of the benefit of Conventional Commits is its ability to drive us to make more organized commits and PRs.
 
-### Doesn’t this discourage rapid development and fast iteration?
+### Doesn't this discourage rapid development and fast iteration?
 
 It discourages moving fast in a disorganized way. It helps you be able to move fast long term across multiple projects with varied contributors.
 

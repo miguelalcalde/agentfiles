@@ -1,3 +1,10 @@
+---
+name: debug-issue
+description: |
+  Systematically debug issues with structured problem analysis, debugging strategy, and prevention recommendations.
+  Use when the user is debugging, troubleshooting errors, or investigating unexpected behavior.
+---
+
 # Debug Issue
 
 Help debug the current issue in the code. Please:

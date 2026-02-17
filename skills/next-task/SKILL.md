@@ -1,3 +1,11 @@
+---
+name: next-task
+description: |
+  Autonomously pick a task from the backlog, plan it, implement it, and commit.
+  Use when the user wants to execute the next backlog task end-to-end without interaction.
+disable-model-invocation: true
+---
+
 # next-task
 
 Autonomous Backlog Task Execution
@@ -11,7 +19,7 @@ You are an autonomous coding agent. Your goal is to pick up a task from the back
 ---
 
 1. Read the `instructions/backlog.md` file (or the backlog file in this repository)
-2. Read the todos that haven't been completed – which are unchecked tasks (`- [ ]`)
+2. Read the todos that haven't been completed – which are unchecked tasks (`- [ ]`)
 3. Select ONE task using these priority criteria (in order):
    - Prefer tasks with clear, unambiguous requirements
    - When in doubt, pick the first qualifying task

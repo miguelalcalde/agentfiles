@@ -1,3 +1,10 @@
+---
+name: code-review
+description: |
+  Review code for quality, security, and best practices with structured checklist.
+  Use when reviewing pull requests, code changes, or when the user asks for a code review.
+---
+
 # Code Review
 
 ## Overview

@@ -1,3 +1,11 @@
+---
+name: brainstorm
+description: |
+  Brainstorm ideas with structured analysis including multiple approaches, risks, and alternatives.
+  Use when the user wants to brainstorm, explore ideas, or evaluate concepts without coding.
+disable-model-invocation: true
+---
+
 Let's brainstorm on the following idea or concept. Share your thoughts, plan and suggest. Do not code unless you are explicitly asked to do so.
 
 Here are some tips:
