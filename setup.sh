@@ -22,6 +22,7 @@ MODE=""
 DRY_RUN=false
 CANONICAL_ROOT=""
 OVERWRITE_EXISTING=""
+VERBOSE=false
 
 AGENTS_REQUESTED=false
 FILES_REQUESTED=false
@@ -79,6 +80,7 @@ usage() {
     echo "  --mode MODE    Install mode: symlink | copy"
     echo "  --tools TOOLS  claude | cursor | all"
     echo "  --dry-run      Preview changes without writing"
+    echo "  --verbose      Print debug diagnostics"
     echo ""
     echo "Examples:"
     echo "  ./setup.sh"
@@ -90,6 +92,29 @@ usage() {
     echo "  ./setup.sh --commands pick,plan --mode symlink --global --tools all"
     echo "  ./setup.sh --files backlog --mode symlink --local"
     echo "  ./setup.sh --files backlog --mode copy --local"
+}
+
+verbose_log() {
+    if [ "$VERBOSE" = true ]; then
+        echo -e "${GRAY}[verbose] $*${NC}"
+    fi
+}
+
+print_verbose_diagnostics() {
+    if [ "$VERBOSE" != true ]; then
+        return
+    fi
+    local tty_in="no"
+    local tty_out="no"
+    local tty_dev="no"
+    [ -t 0 ] && tty_in="yes"
+    [ -t 1 ] && tty_out="yes"
+    [ -r /dev/tty ] && tty_dev="yes"
+    echo -e "${CYAN}Verbose diagnostics${NC}:"
+    verbose_log "pwd=$(pwd)"
+    verbose_log "script_dir=$SCRIPT_DIR"
+    verbose_log "command=$COMMAND"
+    verbose_log "stdin_tty=$tty_in stdout_tty=$tty_out dev_tty_readable=$tty_dev"
 }
 
 is_interactive() {
@@ -146,19 +171,13 @@ path_type() {
     fi
 }
 
-confirm_replace() {
-    local target="$1"
-    if ! is_interactive; then
-        echo "no"
-        return
-    fi
-
-    # Interactive runs use a single overwrite policy prompt for the whole install.
+should_overwrite_target() {
+    local _target="$1"
+    verbose_log "overwrite policy target=$_target overwrite_existing=$OVERWRITE_EXISTING"
     if [ "$OVERWRITE_EXISTING" = "true" ]; then
-        echo "yes"
-    else
-        echo "no"
+        return 0
     fi
+    return 1
 }
 
 install_entry() {
@@ -168,6 +187,7 @@ install_entry() {
     local source_type="$4"
     local current_type
     current_type=$(path_type "$target")
+    verbose_log "install_entry source=$source target=$target mode=$mode source_type=$source_type current_type=$current_type dry_run=$DRY_RUN"
 
     if [ "$DRY_RUN" = true ]; then
         echo -e "  ${BLUE}[dry-run]${NC} $mode $source -> $target"
@@ -177,12 +197,12 @@ install_entry() {
     mkdir -p "$(dirname "$target")"
 
     if [ "$current_type" != "none" ]; then
-        local decision
-        decision=$(confirm_replace "$target")
-        if [ "$decision" != "yes" ]; then
+        if ! should_overwrite_target "$target"; then
+            verbose_log "skip target=$target reason=exists_and_overwrite_disabled"
             echo -e "  ${GRAY}-${NC} Skipped: $target"
             return
         fi
+        verbose_log "overwrite target=$target reason=exists_and_overwrite_enabled"
         local backup="${target}.backup.$(date +%Y-%m-%d-%H%M%S)"
         mv "$target" "$backup"
         echo -e "  ${YELLOW}!${NC} Backed up: $backup"
@@ -386,15 +406,19 @@ prompt_mode() {
 prompt_overwrite_policy() {
     if ! is_interactive; then
         OVERWRITE_EXISTING="false"
+        verbose_log "overwrite policy defaulted to false (non-interactive)"
         return
     fi
 
     if [ -n "$OVERWRITE_EXISTING" ]; then
+        verbose_log "overwrite policy pre-set to $OVERWRITE_EXISTING"
         return
     fi
 
     echo ""
     prompt_read overwrite_choice "Overwrite existing paths when present? [y/N]: "
+    overwrite_choice="${overwrite_choice//[[:space:]]/}"
+    verbose_log "overwrite prompt raw choice='$overwrite_choice'"
     case "$overwrite_choice" in
         y|Y|yes|YES|Yes)
             OVERWRITE_EXISTING="true"
@@ -403,6 +427,7 @@ prompt_overwrite_policy() {
             OVERWRITE_EXISTING="false"
             ;;
     esac
+    verbose_log "overwrite policy resolved to $OVERWRITE_EXISTING"
 }
 
 prompt_targets_if_needed() {
@@ -928,6 +953,9 @@ while [ $# -gt 0 ]; do
         --dry-run|-d)
             DRY_RUN=true
             ;;
+        --verbose|-v)
+            VERBOSE=true
+            ;;
         --help|-h)
             usage
             exit 0
@@ -942,6 +970,7 @@ while [ $# -gt 0 ]; do
 done
 
 ensure_repo_checkout "$@"
+print_verbose_diagnostics
 
 if [ "$COMMAND" = "status" ]; then
     echo -e "${CYAN}Agentfiles status${NC}"
