@@ -30,9 +30,6 @@ FILES_ARG=""
 SKILLS_ARG=""
 COMMANDS_ARG=""
 
-DEFAULT_FILES=("commands" "skills")
-AVAILABLE_FILE_GROUPS=("commands" "skills" "backlog")
-
 ensure_repo_checkout() {
     if [ -d "$SCRIPT_DIR/agents" ] && [ -d "$SCRIPT_DIR/commands" ] && [ -d "$SCRIPT_DIR/skills" ]; then
         return
@@ -71,7 +68,7 @@ usage() {
     echo "  --agents [x,y] Install agent files (prompt if omitted)"
     echo "  --skills [x,y] Install skills (prompt if omitted)"
     echo "  --commands [x,y] Install commands (prompt if omitted)"
-    echo "  --files [x,y]  Install file groups: commands, skills, backlog"
+    echo "  --files [x,y]  Install file groups (auto-discovered top-level directories)"
     echo ""
     echo "Scope and mode:"
     echo "  --global       Install to home directory (~)"
@@ -89,7 +86,7 @@ usage() {
     echo "  ./setup.sh --agents picker,planner --mode symlink --global --tools all"
     echo "  ./setup.sh --skills feature-workflow,code-review --mode symlink --global --tools all"
     echo "  ./setup.sh --commands pick,plan --mode symlink --global --tools all"
-    echo "  ./setup.sh --files commands,skills --mode symlink --global"
+    echo "  ./setup.sh --files backlog --mode symlink --local"
     echo "  ./setup.sh --files backlog --mode copy --local"
 }
 
@@ -211,42 +208,20 @@ install_agents_for_tool() {
     done
 }
 
-install_file_group_for_tool() {
-    local tool="$1"
-    local group="$2"
-    local tool_dir
-    tool_dir="$(tool_dir_name "$tool")"
-
-    if [ "$group" = "commands" ] || [ "$group" = "skills" ]; then
-        install_entry "$SCRIPT_DIR/$group" "$BASE_DIR/$tool_dir/$group" "$MODE" "dir"
+map_file_group_target() {
+    local group="$1"
+    if [ "$group" = "backlog" ]; then
+        echo ".backlog"
+    else
+        echo "$group"
     fi
 }
 
-ensure_backlog_scaffold() {
-    local backlog_dir="$BASE_DIR/.backlog"
-    echo "project backlog scaffold:"
-    if [ "$DRY_RUN" = true ]; then
-        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/prds"
-        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/plans"
-        echo -e "  ${BLUE}[dry-run]${NC} create $backlog_dir/backlog.md"
-        return
-    fi
-
-    mkdir -p "$backlog_dir/prds" "$backlog_dir/plans"
-    if [ ! -f "$backlog_dir/backlog.md" ]; then
-        cat > "$backlog_dir/backlog.md" <<'EOF'
-## Pending
-
-### [example-feature] Example Feature
-
-- **Priority**: P2
-- **Status**: pending
-- **Description**: Replace this with your first feature idea.
-- **PRD**:
-- **Plan**:
-EOF
-    fi
-    echo -e "  ${GREEN}+${NC} Ensured: $backlog_dir/{prds,plans,backlog.md}"
+install_file_group() {
+    local group="$1"
+    local target_name
+    target_name="$(map_file_group_target "$group")"
+    install_entry "$SCRIPT_DIR/$group" "$BASE_DIR/$target_name" "$MODE" "dir"
 }
 
 discover_agents() {
@@ -284,6 +259,20 @@ discover_commands() {
     fi
     for file in $all; do
         basename "$file" .md
+    done
+}
+
+discover_file_groups() {
+    local entry
+    for entry in "$SCRIPT_DIR"/*; do
+        [ -d "$entry" ] || continue
+        local name
+        name=$(basename "$entry")
+        case "$name" in
+            .* ) continue ;;
+            agents|commands|skills|settings) continue ;;
+        esac
+        echo "$name"
     done
 }
 
@@ -328,14 +317,14 @@ prompt_tools() {
     echo -e "${BOLD}Install tools${NC}"
     echo "  1) Claude Code only"
     echo "  2) Cursor only"
-    echo "  3) Both"
+    echo "  a) all (both Claude and Cursor)"
     echo ""
-    read -p "Choice [1-3] (default: 3 - both): " tools_choice
-    tools_choice="${tools_choice:-3}"
+    read -p "Choice [1-2 or a] (default: a - all): " tools_choice
+    tools_choice="${tools_choice:-a}"
     case "$tools_choice" in
         1) TOOLS="claude" ;;
         2) TOOLS="cursor" ;;
-        3) TOOLS="all" ;;
+        a|all) TOOLS="all" ;;
         *)
             echo "Invalid choice"
             exit 1
@@ -383,10 +372,10 @@ prompt_targets_if_needed() {
         echo "  2) Skills"
         echo "  3) Commands"
         echo "  4) Files"
-        echo "  5) All"
+        echo "  a) all"
         echo ""
-        read -p "Choice [1-5] (default: 5 - all): " target_choice
-        target_choice="${target_choice:-5}"
+        read -p "Choice [1-4 or a] (default: a - all): " target_choice
+        target_choice="${target_choice:-a}"
         case "$target_choice" in
             1) AGENTS_REQUESTED=true ;;
             3)
@@ -398,7 +387,7 @@ prompt_targets_if_needed() {
             4)
                 FILES_REQUESTED=true
                 ;;
-            5)
+            a|all)
                 AGENTS_REQUESTED=true
                 SKILLS_REQUESTED=true
                 COMMANDS_REQUESTED=true
@@ -464,27 +453,62 @@ resolve_agent_selection() {
 }
 
 resolve_file_selection() {
+    local available_groups=()
+    while IFS= read -r line; do
+        [ -n "$line" ] && available_groups+=("$line")
+    done < <(discover_file_groups)
+
+    if [ "${#available_groups[@]}" -eq 0 ]; then
+        echo -e "${RED}No file groups found. Add top-level directories (excluding reserved/hidden).${NC}"
+        exit 1
+    fi
+
     if [ -n "$FILES_ARG" ]; then
         split_csv "$FILES_ARG"
-        SELECTED_FILE_GROUPS=("${OUT_ARRAY[@]}")
+        SELECTED_FILE_GROUPS=()
+        local requested
+        for requested in "${OUT_ARRAY[@]}"; do
+            local found=false
+            local existing
+            for existing in "${available_groups[@]}"; do
+                if [ "$requested" = "$existing" ]; then
+                    found=true
+                    break
+                fi
+            done
+            if [ "$found" = false ]; then
+                echo -e "${RED}Unknown file group: $requested${NC}"
+                exit 1
+            fi
+            SELECTED_FILE_GROUPS+=("$requested")
+        done
         return
     fi
 
     if ! is_interactive; then
-        SELECTED_FILE_GROUPS=("${DEFAULT_FILES[@]}")
+        SELECTED_FILE_GROUPS=("${available_groups[@]}")
         return
     fi
     echo ""
     echo -e "${BOLD}Available file groups${NC}"
-    echo "  1) commands"
-    echo "  2) skills"
-    echo "  3) backlog"
+    local i=1
+    local group
+    for group in "${available_groups[@]}"; do
+        local mapped
+        mapped="$(map_file_group_target "$group")"
+        if [ "$mapped" != "$group" ]; then
+            echo "  $i) $group -> $mapped"
+        else
+            echo "  $i) $group"
+        fi
+        i=$((i + 1))
+    done
     echo "  a) all"
     echo ""
     read -p "Select file groups (comma-separated indexes or 'a', default: a): " picked
     picked="${picked:-a}"
     if [ "$picked" = "a" ] || [ "$picked" = "all" ]; then
-        SELECTED_FILE_GROUPS=("${AVAILABLE_FILE_GROUPS[@]}")
+        SELECTED_FILE_GROUPS=("${available_groups[@]}")
         return
     fi
 
@@ -492,11 +516,9 @@ resolve_file_selection() {
     SELECTED_FILE_GROUPS=()
     local idx
     for idx in "${OUT_ARRAY[@]}"; do
-        case "$idx" in
-            1) SELECTED_FILE_GROUPS+=("commands") ;;
-            2) SELECTED_FILE_GROUPS+=("skills") ;;
-            3) SELECTED_FILE_GROUPS+=("backlog") ;;
-        esac
+        if [ "$idx" -ge 1 ] 2>/dev/null && [ "$idx" -le "${#available_groups[@]}" ]; then
+            SELECTED_FILE_GROUPS+=("${available_groups[$((idx - 1))]}")
+        fi
     done
     if [ "${#SELECTED_FILE_GROUPS[@]}" -eq 0 ]; then
         echo -e "${RED}No valid file group selection.${NC}"
@@ -766,7 +788,9 @@ fi
 
 prompt_targets_if_needed
 prompt_install_scope
-prompt_tools
+if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
+    prompt_tools
+fi
 prompt_mode
 
 if [ "$MODE" != "symlink" ] && [ "$MODE" != "copy" ]; then
@@ -774,9 +798,11 @@ if [ "$MODE" != "symlink" ] && [ "$MODE" != "copy" ]; then
     exit 1
 fi
 
-if [ "$TOOLS" != "claude" ] && [ "$TOOLS" != "cursor" ] && [ "$TOOLS" != "all" ]; then
-    echo -e "${RED}Invalid --tools. Use claude, cursor, or all.${NC}"
-    exit 1
+if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
+    if [ "$TOOLS" != "claude" ] && [ "$TOOLS" != "cursor" ] && [ "$TOOLS" != "all" ]; then
+        echo -e "${RED}Invalid --tools. Use claude, cursor, or all.${NC}"
+        exit 1
+    fi
 fi
 
 if [ "$AGENTS_REQUESTED" = true ]; then
@@ -796,13 +822,19 @@ if [ "$FILES_REQUESTED" = true ]; then
 fi
 
 echo -e "${CYAN}Installing to: $BASE_DIR${NC}"
-echo -e "Mode: ${GRAY}$MODE${NC} | Tools: ${GRAY}$TOOLS${NC}"
+if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
+    echo -e "Mode: ${GRAY}$MODE${NC} | Tools: ${GRAY}$TOOLS${NC}"
+else
+    echo -e "Mode: ${GRAY}$MODE${NC}"
+fi
 
 TOOLS_LIST=()
-if [ "$TOOLS" = "all" ]; then
-    TOOLS_LIST=("claude" "cursor")
-else
-    TOOLS_LIST=("$TOOLS")
+if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
+    if [ "$TOOLS" = "all" ]; then
+        TOOLS_LIST=("claude" "cursor")
+    else
+        TOOLS_LIST=("$TOOLS")
+    fi
 fi
 
 if [ "$AGENTS_REQUESTED" = true ]; then
@@ -833,14 +865,9 @@ if [ "$FILES_REQUESTED" = true ]; then
     echo ""
     echo -e "${CYAN}Files${NC}: ${SELECTED_FILE_GROUPS[*]}"
     for group in "${SELECTED_FILE_GROUPS[@]}"; do
-        if [ "$group" = "backlog" ]; then
-            ensure_backlog_scaffold
-            continue
-        fi
-        for tool in "${TOOLS_LIST[@]}"; do
-            echo "$tool $group:"
-            install_file_group_for_tool "$tool" "$group"
-        done
+        local_target="$(map_file_group_target "$group")"
+        echo "$group -> $local_target:"
+        install_file_group "$group"
     done
 fi
 

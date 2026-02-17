@@ -1,0 +1,69 @@
+# Agent Workflow Configuration
+# See https://github.com/miguelalcalde/agentworkflow for documentation
+
+workflow:
+  name: "your-project"
+  version: "1.0"
+
+# File locations (relative to repo root)
+paths:
+  backlog: ".backlog/backlog.md"
+  prds: ".backlog/prds"
+  plans: ".backlog/plans"
+  questions: ".backlog/questions.md"
+  action_log: ".backlog/action-log.md"
+
+# Agent settings
+agents:
+  picker:
+    enabled: true
+    auto_browser: true  # Use agent-browser for research if available
+  planner:
+    enabled: true
+  refiner:
+    enabled: true
+  implementer:
+    enabled: true
+    auto_commit: true
+    run_tests: true
+    run_lint: true
+
+# Commands (customize for your project)
+commands:
+  test: "npm test"           # or: bun test, pytest, go test, etc.
+  lint: "npm run lint"       # or: bun run check, ruff, golangci-lint, etc.
+  build: "npm run build"     # or: bun run build, cargo build, etc.
+
+# Boundaries - files agents should not modify
+boundaries:
+  never_touch:
+    - "*.lock"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "bun.lock"
+    - ".git/**"
+    - "node_modules/**"
+    - "vendor/**"
+    - "dist/**"
+    - "build/**"
+
+# Conductor orchestration settings
+orchestration:
+  name: default  # conductor name for action-log tracking (useful when running multiple)
+
+  # Array of phases to run. Options: pick, plan, refine, implement
+  phases: [pick, plan, refine, implement]  # full pipeline
+  # phases: [pick]                          # pick only
+  # phases: [pick, plan]                    # pick and plan, stop before refine
+  # phases: [plan, implement]               # skip pick, plan existing PRDs and implement
+
+  max_iterations: 20           # safety limit to prevent infinite loops
+  stop_on_first_block: false   # true = stop at first blocked item
+
+# Git settings for implementer
+git:
+  branch_prefix: "feat/"       # prefix for feature branches
+  create_pr: true              # auto-create PR when implementation complete
+  pr_draft: true               # create as draft PR
+  commit_per_step: false       # true = commit after each step, false = batch commits
+  never_merge: true            # safety: agents cannot merge PRs

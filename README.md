@@ -95,13 +95,14 @@ This separation enables both interactive and programmatic use.
 ./setup.sh --agents picker,planner --global --mode symlink --tools all
 ./setup.sh --skills feature-workflow,code-review --global --mode symlink --tools all
 ./setup.sh --commands pick,plan --global --mode symlink --tools all
-./setup.sh --files commands,skills --global --mode symlink --tools all
-./setup.sh --files backlog --local --mode copy
+./setup.sh --files                               # Interactive file-group picker
+./setup.sh --files backlog --local --mode copy  # Install backlog template to .backlog/
 ./setup.sh status                             # Show current install status
 ./setup.sh update                             # Pull latest changes from git
 ```
 
 When running interactively, `setup.sh` uses built-in plain terminal prompts (no external dependencies).
+File groups are auto-discovered from top-level directories excluding reserved directories (`agents`, `commands`, `skills`, `settings`) and hidden directories.
 
 ## What Gets Installed
 
@@ -183,7 +184,10 @@ Each project using these agents needs a `.backlog/` folder:
 ```
 your-project/
 └── .backlog/
+    ├── config.yaml
     ├── backlog.md
+    ├── action-log.md
+    ├── questions.md
     ├── prds/
     │   └── PRD-user-auth.md
     └── plans/
