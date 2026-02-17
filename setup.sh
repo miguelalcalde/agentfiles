@@ -24,6 +24,8 @@ DRY_RUN=false
 CANONICAL_ROOT=""
 OVERWRITE_EXISTING=""
 VERBOSE=false
+BACKUP_RUN_ID=""
+BACKUP_ROOT=""
 
 AGENTS_REQUESTED=false
 FILES_REQUESTED=false
@@ -171,6 +173,11 @@ relative_path() {
     python3 -c "import os,sys;print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$source" "$target_dir"
 }
 
+sanitize_run_id() {
+    # Portable timestamp safe for filesystem paths.
+    date -u +%Y-%m-%dT%H-%M-%SZ
+}
+
 path_type() {
     local path="$1"
     if [ -L "$path" ]; then
@@ -216,9 +223,18 @@ install_entry() {
             return
         fi
         verbose_log "overwrite target=$target reason=exists_and_overwrite_enabled"
-        local backup="${target}.backup.$(date +%Y-%m-%d-%H%M%S)"
-        mv "$target" "$backup"
-        echo -e "  ${YELLOW}!${NC} Backed up: $backup"
+        local target_rel
+        local backup_target
+        local backup_dir
+        local ts
+        target_rel=$(relative_path "$target" "$BASE_DIR")
+        ts=$(date +%Y-%m-%d-%H%M%S)
+        backup_target="$BACKUP_ROOT/$target_rel.backup.$ts"
+        backup_dir="$(dirname "$backup_target")"
+        verbose_log "backup target=$target backup_target=$backup_target"
+        mkdir -p "$backup_dir"
+        mv "$target" "$backup_target"
+        echo -e "  ${YELLOW}!${NC} Backed up: $backup_target"
     fi
 
     if [ "$mode" = "copy" ]; then
@@ -779,6 +795,14 @@ resolve_canonical_root() {
     fi
 }
 
+init_backup_root() {
+    if [ -z "$BACKUP_RUN_ID" ]; then
+        BACKUP_RUN_ID="$(sanitize_run_id)"
+    fi
+    BACKUP_ROOT="$CANONICAL_ROOT/backups/$BACKUP_RUN_ID"
+    verbose_log "backup_run_id=$BACKUP_RUN_ID backup_root=$BACKUP_ROOT"
+}
+
 stage_agents_to_canonical() {
     local selected_agents=("$@")
     [ "${#selected_agents[@]}" -gt 0 ] || return
@@ -1043,6 +1067,7 @@ fi
 
 echo -e "${CYAN}Installing to: $BASE_DIR${NC}"
 resolve_canonical_root
+init_backup_root
 if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ] || [ "$COMMANDS_REQUESTED" = true ]; then
     echo -e "Mode: ${GRAY}$MODE${NC} | Tools: ${GRAY}$TOOLS${NC}"
     echo -e "Canonical root: ${GRAY}$CANONICAL_ROOT${NC}"
