@@ -3,7 +3,7 @@ slug: [feature-slug]
 title: [Feature Title]
 status: blank | refined | needs_review | approved
 created_at: [timestamp]
-created_by: agent:picker
+created_by: agent:triager
 refined_at:
 refined_by:
 iterations: 0

@@ -15,7 +15,7 @@ paths:
 
 # Agent settings
 agents:
-  picker:
+  triager:
     enabled: true
     auto_browser: true  # Use agent-browser for research if available
   planner:

@@ -3,7 +3,7 @@ name: feature-workflow
 description: |
   Structured workflow for taking features from backlog to implementation.
   Use when picking tasks, refining PRDs, planning implementation, or implementing features.
-  Invokes specialized agents: picker, refiner, planner, implementer, conductor.
+  Invokes specialized agents: triager, refiner, planner, implementer, conductor.
 ---
 
 # Feature Workflow
@@ -24,7 +24,7 @@ Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /
 
 | Command                | Agent       | Purpose                                    |
 | ---------------------- | ----------- | ------------------------------------------ |
-| `/pick`                | picker      | Select task from backlog, create blank PRD |
+| `/pick`                | triager     | Select task from backlog, create blank PRD |
 | `/refine [slug]`       | refiner     | Complete and validate PRD                  |
 | `/plan [slug]`         | planner     | Create implementation plan                 |
 | `/implement [slug]`    | implementer | Execute plan on feature branch             |
@@ -36,7 +36,7 @@ Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /
 
 | Agent           | Branch       | Writes To                    | Tools                              |
 | --------------- | ------------ | ---------------------------- | ---------------------------------- |
-| **picker**      | main         | `{paths.prds}/`, `{paths.backlog}` | Read, Write, Glob                  |
+| **triager**     | main         | `{paths.prds}/`, `{paths.backlog}` | Read, Write, Glob                  |
 | **refiner**     | main         | `{paths.prds}/`              | Read, Write, Edit, Grep, Glob      |
 | **planner**     | main         | `{paths.plans}/`, `{paths.prds}/` | Read, Write, Edit, Grep, Glob |
 | **implementer** | feature/*    | Source code                  | Read, Write, Edit, Grep, Glob, Bash|

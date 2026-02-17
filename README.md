@@ -92,7 +92,7 @@ This separation enables both interactive and programmatic use.
 ./setup.sh --agents                           # Interactive: pick agents
 ./setup.sh --skills                           # Interactive: pick skills
 ./setup.sh --commands                         # Interactive: pick commands
-./setup.sh --agents picker,planner --global --mode symlink --tools all
+./setup.sh --agents triager,planner --global --mode symlink --tools all
 ./setup.sh --skills feature-workflow,code-review --global --mode symlink --tools all
 ./setup.sh --commands pick,plan --global --mode symlink --tools all
 ./setup.sh --files                               # Interactive file-group picker
@@ -139,7 +139,7 @@ Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /
 
 | Command           | Agent       | Purpose                                    |
 | ----------------- | ----------- | ------------------------------------------ |
-| `/pick`           | picker      | Select task from backlog, create blank PRD |
+| `/pick`           | triager     | Select task from backlog, create blank PRD |
 | `/refine slug`    | refiner     | Complete and validate PRD                  |
 | `/plan slug`      | planner     | Create implementation plan                 |
 | `/implement slug` | implementer | Execute plan on feature branch             |
@@ -165,7 +165,7 @@ done
 In Cursor, invoke agents directly:
 
 ```
-/picker select the next task
+/triager select the next task
 /refiner refine user-auth
 /planner create plan for user-auth
 ```

@@ -101,7 +101,7 @@ usage() {
     echo "  ./setup.sh --agents"
     echo "  ./setup.sh --skills"
     echo "  ./setup.sh --commands"
-    echo "  ./setup.sh --agents picker,planner --mode symlink --global --tools all"
+    echo "  ./setup.sh --agents triager,planner --mode symlink --global --tools all"
     echo "  ./setup.sh --skills feature-workflow,code-review --mode symlink --global --tools all"
     echo "  ./setup.sh --commands pick,plan --mode symlink --global --tools all"
     echo "  ./setup.sh --files backlog --mode symlink --local"
