@@ -95,6 +95,14 @@ is_interactive() {
     [ -t 0 ] && [ -t 1 ]
 }
 
+ensure_tty_stdin() {
+    # `curl ... | bash` pipes script content into stdin, which disables prompts.
+    # Reattach stdin to the user's terminal when available so interactive prompts still work.
+    if [ ! -t 0 ] && [ -t 1 ] && [ -r /dev/tty ]; then
+        exec < /dev/tty
+    fi
+}
+
 split_csv() {
     local input="$1"
     input="${input// /}"
@@ -902,6 +910,8 @@ if [ "$COMMAND" = "update" ]; then
     update_repo
     exit 0
 fi
+
+ensure_tty_stdin
 
 prompt_targets_if_needed
 prompt_install_scope
