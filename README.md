@@ -8,10 +8,10 @@ Portable agents, commands, and skills for Claude Code and Cursor. Fork this repo
 
 ## Quick Start
 
-**One-liner bootstrap (then interactive setup):**
+**One-liner bootstrap + setup (single file):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/miguelalcalde/agentfiles/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/miguelalcalde/agentfiles/main/setup.sh | bash
 ```
 
 **Or clone manually:**
@@ -90,12 +90,18 @@ This separation enables both interactive and programmatic use.
 ```bash
 ./setup.sh                                    # Fully interactive
 ./setup.sh --agents                           # Interactive: pick agents
+./setup.sh --skills                           # Interactive: pick skills
+./setup.sh --commands                         # Interactive: pick commands
 ./setup.sh --agents picker,planner --global --mode symlink --tools all
+./setup.sh --skills feature-workflow,code-review --global --mode symlink --tools all
+./setup.sh --commands pick,plan --global --mode symlink --tools all
 ./setup.sh --files commands,skills --global --mode symlink --tools all
 ./setup.sh --files backlog --local --mode copy
 ./setup.sh status                             # Show current install status
 ./setup.sh update                             # Pull latest changes from git
 ```
+
+When running interactively, `setup.sh` uses built-in plain terminal prompts (no external dependencies).
 
 ## What Gets Installed
 
@@ -212,9 +218,7 @@ Since you've forked the repo, you can:
 
 - **Preview before action** — Use `--dry-run` to see what will happen
 - **Explicit confirmation** — Asks before overwriting existing files
-- **Timestamped backups** — Existing files are backed up as `filename.backup.YYYY-MM-DD`
-- **Validation** — Run `./setup.sh validate` to check repo structure
-- **Unlink command** — Easy removal with `./setup.sh unlink`
+- **Timestamped backups** — Existing files are backed up as `filename.backup.YYYY-MM-DD-HHMMSS`
 
 ## Updating
 
