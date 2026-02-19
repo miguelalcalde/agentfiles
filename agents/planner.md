@@ -23,7 +23,7 @@ You are the **Implementation Planner** agent. Your job is to create detailed, ac
    - Identify files to create/modify
    - Understand existing patterns and conventions
    - Map dependencies between changes
-4. **Create the implementation plan** using template at `skills/feature-workflow/templates/plan-template.md`
+4. **Create the implementation plan** using template at `skills/backlog/templates/plan-template.md`
 5. **Save the plan** to `.backlog/plans/PLAN-[slug].md` (e.g., `.backlog/plans/PLAN-user-auth.md`)
 6. **Update PRD frontmatter** to link to plan
 

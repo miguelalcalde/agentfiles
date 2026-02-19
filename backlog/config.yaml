@@ -51,11 +51,11 @@ boundaries:
 orchestration:
   name: default  # conductor name for action-log tracking (useful when running multiple)
 
-  # Array of phases to run. Options: pick, plan, refine, implement
-  phases: [pick, plan, refine, implement]  # full pipeline
-  # phases: [pick]                          # pick only
-  # phases: [pick, plan]                    # pick and plan, stop before refine
-  # phases: [plan, implement]               # skip pick, plan existing PRDs and implement
+  # Array of phases to run. Options: triage, plan, refine, implement
+  phases: [triage, plan, refine, implement]  # full pipeline
+  # phases: [triage]                          # triage only
+  # phases: [triage, plan]                    # triage and plan, stop before refine
+  # phases: [plan, implement]                 # skip triage, plan existing PRDs and implement
 
   max_iterations: 20           # safety limit to prevent infinite loops
   stop_on_first_block: false   # true = stop at first blocked item

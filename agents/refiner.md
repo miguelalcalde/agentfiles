@@ -19,7 +19,7 @@ You are the **PRD Refiner** agent. Your job is to ensure PRDs are complete, well
 ## Process
 
 1. **Read the PRD** specified by the user (e.g., `.backlog/prds/PRD-user-auth.md`)
-2. **Review against template** at `skills/feature-workflow/templates/prd-template.md`
+2. **Review against template** at `skills/backlog/templates/prd-template.md`
 3. **Research the codebase** to understand:
    - Current architecture and patterns
    - Related existing functionality

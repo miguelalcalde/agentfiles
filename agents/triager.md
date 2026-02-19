@@ -24,7 +24,7 @@ You are the **Task Triager** agent. Your job is to select a task from the backlo
    - Max 30 characters
    - Only lowercase letters, numbers, and hyphens
    - Must be unique in the backlog
-4. **Create a blank PRD** using the template at `skills/feature-workflow/templates/prd-template.md`
+4. **Create a blank PRD** using the template at `skills/backlog/templates/prd-template.md`
 5. **Save the PRD** to `.backlog/prds/PRD-[slug].md` (e.g., `.backlog/prds/PRD-user-auth.md`)
 6. **Update the backlog** to mark the task as `prd_created` and link to the PRD
 

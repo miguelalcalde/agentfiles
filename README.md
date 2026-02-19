@@ -1,245 +1,171 @@
 # Agentfiles
 
-> [!IMPORTANT]
-> This is a work in progress. It is not ready for production use.
-> This project has been de-prioritized in favor of agentworkflow which is more localized.
-
-Portable agents, commands, and skills for Claude Code and Cursor. Fork this repo to build your own agent toolkit.
+Portable agents, commands, skills, and file templates for Claude Code and Cursor.
 
 ## Quick Start
 
-**One-liner bootstrap + setup (single file):**
+Install from a single command (no manual clone required):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/miguelalcalde/agentfiles/main/setup.sh | bash
 ```
 
-**Or clone manually:**
+Pass flags when piping to bash:
 
 ```bash
-git clone git@github.com:YOUR_USERNAME/agentfiles.git ~/.agentfiles
-cd ~/.agentfiles && ./setup.sh
+curl -fsSL https://raw.githubusercontent.com/miguelalcalde/agentfiles/main/setup.sh | bash -s -- --global --verbose
 ```
+
+For local development of this repo:
+
+```bash
+git clone git@github.com:miguelalcalde/agentfiles.git
+cd agentfiles
+./setup.sh --help
+```
+
+## Getting Started
+
+1. Run the installer interactively (`curl ... | bash`).
+2. Choose what to install (`agents`, `skills`, `commands`, `files`).
+3. Choose scope (`--global`, `--local`, or custom path).
+4. Choose `symlink` or `copy` mode.
+5. Choose whether existing paths should be overwritten.
+
+Useful flags:
+
+- `--dry-run`: preview actions without writing.
+- `--verbose`: show detailed diagnostics and decision logs.
+- `--agents x,y`, `--skills x,y`, `--commands x,y`, `--files x,y`: install selected items.
+
+## Core Concepts
+
+### Agents
+
+Agents are the implementation layer: behavior, process, and tool constraints.
+
+Example: `agents/triager.md`
+
+- Reads `.backlog/backlog.md`
+- Selects the next pending task
+- Creates a PRD in `.backlog/prds/`
+
+### Commands
+
+Commands are thin entrypoints that route to agents.
+
+Example: `commands/triage.md`
+
+- `/triage` delegates to the `triager` agent.
+- This was previously mapped to `picker`; it is now `triager`.
+
+### Skills
+
+Skills are reusable knowledge packs and templates used by agents.
+
+Examples:
+
+- `skills/backlog/`
+- `skills/commit/`
+
+### Files (file groups)
+
+`files` are top-level template directories that get installed into hidden project folders.
+
+Example:
+
+- Source file group: `backlog/`
+- Installed target: `.backlog/`
+
+So running setup with `--files backlog` materializes project scaffolding like `.backlog/config.yaml`, `.backlog/prds/`, `.backlog/plans/`.
 
 ## Platform Support
 
-This toolkit works with both **Claude Code** and **Cursor**. Here's what each platform supports:
+| Feature | Claude Code | Cursor | Notes |
+| --- | --- | --- | --- |
+| Skills | ✅ | ✅ | Same SKILL.md format |
+| Agents | ✅ | ✅ | Cursor uses subagents |
+| Commands | ✅ | ❌ | Claude slash commands only |
+| Settings | ✅ | ❌ | Claude settings are separate |
 
-### Feature Compatibility
+## Install Layout
 
-| Feature      | Claude Code | Cursor | Notes                                                                    |
-| ------------ | ----------- | ------ | ------------------------------------------------------------------------ |
-| **Skills**   | ✅          | ✅     | Same SKILL.md format, both platforms                                     |
-| **Agents**   | ✅          | ✅     | Cursor calls them "subagents", reads `.claude/agents/` for compatibility |
-| **Commands** | ✅          | ❌     | Claude Code only; Cursor uses different slash command system             |
-| **Settings** | ✅          | ❌     | Claude uses `settings.json`; Cursor uses VSCode settings                 |
-
-### Agent Field Compatibility
-
-| Field           | Claude Code | Cursor | Notes                                                        |
-| --------------- | ----------- | ------ | ------------------------------------------------------------ |
-| `name`          | ✅          | ✅     | Agent identifier                                             |
-| `description`   | ✅          | ✅     | When to invoke this agent                                    |
-| `model`         | ✅          | ✅     | `inherit`, `fast`, or specific model ID                      |
-| `color`         | ✅          | ❌     | UI customization (Claude only)                               |
-| `tools`         | ✅          | ❌     | Tool restrictions (Claude only); Cursor inherits from parent |
-| `readonly`      | ❓          | ✅     | Restrict write permissions (Cursor only)                     |
-| `is_background` | ✅          | ✅     | Run without blocking                                         |
-
-### What This Means
-
-- **In Claude Code**: Full functionality—agents have tool restrictions, commands provide slash entry points
-- **In Cursor**: Agents work as subagents, but `color` and `tools` fields are ignored. Commands don't create slash commands (invoke agents directly with `/agentname`)
-
-## Architecture
-
-```
-commands/          → Interface layer (defines arguments, routes to agents)
-agents/            → Implementation layer (full instructions, tool restrictions)
-skills/            → Knowledge layer (workflows, templates, domain expertise)
-```
-
-**Commands** are thin wrappers that define the programmatic interface:
-
-```yaml
----
-description: Refine a PRD
-arguments:
-  - name: slug
-    required: true
----
-Invoke the **refiner** agent to refine PRD-$ARGUMENTS.slug.md
-```
-
-**Agents** contain the full implementation:
-
-```yaml
----
-name: refiner
-description: Use to refine PRD documents
-model: inherit
-tools: Read, Write, Edit, Grep, Glob
----
-You are the PRD Refiner agent...
-```
-
-This separation enables both interactive and programmatic use.
-
-## Setup Commands
-
-```bash
-./setup.sh                                    # Fully interactive
-./setup.sh --agents                           # Interactive: pick agents
-./setup.sh --skills                           # Interactive: pick skills
-./setup.sh --commands                         # Interactive: pick commands
-./setup.sh --agents triager,planner --global --mode symlink --tools all
-./setup.sh --skills feature-workflow,code-review --global --mode symlink --tools all
-./setup.sh --commands pick,plan --global --mode symlink --tools all
-./setup.sh --files                               # Interactive file-group picker
-./setup.sh --files backlog --local --mode copy  # Install backlog template to .backlog/
-./setup.sh status                             # Show current install status
-./setup.sh update                             # Pull latest changes from git
-```
-
-When running interactively, `setup.sh` uses built-in plain terminal prompts (no external dependencies).
-File groups are auto-discovered from top-level directories excluding reserved directories (`agents`, `commands`, `skills`, `settings`) and hidden directories.
-When installed, file groups are materialized as hidden root folders (for example `backlog` -> `.backlog`).
-
-## What Gets Installed
-
-The setup script can install by `symlink` (relative links) or `copy`.
-
-Typical global setup:
+Canonical install root:
 
 ```
 ~/.agents/
 ├── manifest.json
 ├── agents/
 ├── commands/
-└── skills/
+├── skills/
+└── backups/
+```
 
+Tool-specific links/copies:
+
+```
 ~/.claude/
-├── agents/*.md   → ~/.agents/agents/*.md (selected agents)
-├── commands/     → ~/.agents/commands/*.md (selected commands)
-└── skills/       → ~/.agents/skills/* (selected skills)
+├── agents/*.md
+├── commands/*.md
+└── skills/*
 
 ~/.cursor/
-├── agents/*.md   → ~/.agents/agents/*.md (selected agents)
-├── commands/     → ~/.agents/commands/*.md (selected commands)
-└── skills/       → ~/.agents/skills/* (selected skills)
+├── agents/*.md
+├── commands/*.md
+└── skills/*
 ```
 
-## Workflow
+## Overwrite and Backups
 
-Once installed, you have access to the feature workflow:
+- Interactive installs ask once: `Overwrite existing paths when present? [y/N]`.
+- If overwrite is enabled, replaced targets are backed up under:
 
 ```
-Backlog → /pick → PRD → /refine → PRD (refined) → /plan → Plan → /implement → Code
+~/.agents/backups/<run-id>/...
 ```
 
-| Command           | Agent       | Purpose                                    |
-| ----------------- | ----------- | ------------------------------------------ |
-| `/pick`           | triager     | Select task from backlog, create blank PRD |
-| `/refine slug`    | refiner     | Complete and validate PRD                  |
-| `/plan slug`      | planner     | Create implementation plan                 |
-| `/implement slug` | implementer | Execute plan on feature branch             |
+- Backup paths mirror the original target structure (for easier restore).
+- Backups are intentionally outside install folders to avoid autodiscovery pollution.
 
-### Programmatic Chaining
+## Bootstrap Behavior
 
-Agents can be invoked programmatically for automation:
+When run via `curl | bash`, the installer bootstraps from a temporary clone and cleans it up automatically after execution. It does not keep a persistent bootstrap repo in home directories.
+
+## Setup Examples
 
 ```bash
-# Using Claude CLI
-claude "/pick"
-claude "/refine user-auth"
-claude "/plan user-auth"
-claude "/implement user-auth"
+# Fully interactive
+./setup.sh
 
-# Loop over multiple features
-for slug in user-auth dashboard-analytics; do
-  claude "/refine $slug"
-  claude "/plan $slug"
-done
+# Install selected components
+./setup.sh --agents triager,planner --skills backlog --commands triage,plan --global --tools all
+
+# Install project templates locally
+./setup.sh --files backlog --local --mode copy
+
+# Debug decisions and path detection
+./setup.sh --skills backlog --global --tools claude --verbose
 ```
 
-In Cursor, invoke agents directly:
+## Workflow Example
+
+Feature workflow command chain:
 
 ```
-/triager select the next task
-/refiner refine user-auth
-/planner create plan for user-auth
+/triage -> /refine <slug> -> /plan <slug> -> /implement <slug>
 ```
 
-## Naming Convention
+| Command | Agent | Purpose |
+| --- | --- | --- |
+| `/triage` | `triager` | Select next backlog task and create initial PRD |
+| `/refine <slug>` | `refiner` | Complete/validate PRD |
+| `/plan <slug>` | `planner` | Produce implementation plan |
+| `/implement <slug>` | `implementer` | Execute plan changes |
 
-The workflow uses descriptive **slugs** instead of numeric IDs:
+In Cursor, invoke the agent directly (for example `/triager`).
 
-| Artifact      | Format           | Example                           |
-| ------------- | ---------------- | --------------------------------- |
-| Backlog entry | `[slug] Title`   | `[user-auth] User Authentication` |
-| PRD file      | `PRD-[slug].md`  | `PRD-user-auth.md`                |
-| Plan file     | `PLAN-[slug].md` | `PLAN-user-auth.md`               |
-| Branch        | `feat/[slug]`    | `feat/user-auth`                  |
+## Development Notes
 
-Slugs are lowercase kebab-case, max 30 characters.
-
-## Per-Project Setup
-
-Each project using these agents needs a `.backlog/` folder:
-
-```
-your-project/
-└── .backlog/
-    ├── config.yaml
-    ├── backlog.md
-    ├── action-log.md
-    ├── questions.md
-    ├── prds/
-    │   └── PRD-user-auth.md
-    └── plans/
-        └── PLAN-user-auth.md
-```
-
-Example `backlog.md`:
-
-```markdown
-## Pending
-
-### [user-auth] User Authentication
-
-- **Priority**: P0 (Critical)
-- **Status**: pending
-- **Description**: Add user authentication with email/password
-- **PRD**:
-- **Plan**:
-```
-
-## Customizing
-
-Since you've forked the repo, you can:
-
-1. Add your own commands to `commands/`
-2. Create new skills in `skills/`
-3. Modify agents in `agents/`
-4. Commit and push to your fork
-5. On new machines, clone your fork and run setup
-
-## Safety Features
-
-- **Preview before action** — Use `--dry-run` to see what will happen
-- **Explicit confirmation** — Asks before overwriting existing files
-- **Timestamped backups** — Existing files are backed up as `filename.backup.YYYY-MM-DD-HHMMSS`
-
-## Updating
-
-```bash
-./setup.sh update
-```
-
-Or manually:
-
-```bash
-cd ~/.agentfiles && git pull
-```
-
-Since symlinks point to your cloned repo, updates are immediate.
+- This repository is the development source.
+- End users should prefer installation through `curl -fsSL ... | bash`.
+- To contribute, modify files in this repo and push updates to `main`.
