@@ -1,9 +1,13 @@
+---
+name: Backlog
+description: Tracks all work items for the project.
+format: "- [ ] [FEAT|FIX] [HIGH|MED|LOW] **Name**. Description"
+---
+
+## In Progress
+
 ## Pending
 
-### [example-feature] Example Feature
+- [ ] [FEAT] [MED] **Example Feature**. Replace this with your first feature idea.
 
-- **Priority**: P2
-- **Status**: pending
-- **Description**: Replace this with your first feature idea.
-- **PRD**:
-- **Plan**:
+## Done
