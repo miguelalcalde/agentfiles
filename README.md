@@ -52,12 +52,19 @@ Example: `agents/triager.md`
 
 ### Commands
 
-Commands are thin entrypoints that route to agents.
+Commands are entrypoints for workflow orchestration and focused utilities.
 
-Example: `commands/triage.md`
+Examples:
 
-- `/triage` delegates to the `triager` agent.
+- `commands/triage.md`: `/triage` delegates to the `triager` agent.
+- `commands/knip.md`: runs unused-code analysis and cleanup planning.
 - This was previously mapped to `picker`; it is now `triager`.
+
+Native behaviors:
+
+- Clarification requests are native assistant behavior; no `/ask` command is needed.
+- Use `/plan <slug>` for backlog workflow planning.
+- For ad-hoc file-level planning, prompt directly in chat with scope + constraints.
 
 ### Skills
 
@@ -67,6 +74,7 @@ Examples:
 
 - `skills/backlog/`
 - `skills/commit/`
+- `skills/generate-agents-md/`
 
 ### Files (file groups)
 

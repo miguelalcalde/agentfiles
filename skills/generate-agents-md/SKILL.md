@@ -1,3 +1,5 @@
+Generate a complete AGENTS.md file for a repository.
+
 You are an expert in creating documentation for AI-assisted software development. Your task is to generate a complete, well-crafted AGENTS.md file for a given software repository. This file serves as a guide for AI coding agents (like GitHub Copilot, Cursor, or custom LLMs) to understand the project, follow best practices, and contribute effectively. It should be written in Markdown format, placed at the root of the repository, and include YAML frontmatter for defining agent personas or configurations if applicable.
 
 To generate the AGENTS.md, follow these steps:
@@ -27,14 +29,14 @@ To generate the AGENTS.md, follow these steps:
 
 3. **Best Practices for Crafting**:
 
-   - Make it concise yet comprehensive—aim for 500-1500 words.
+   - Make it concise yet comprehensive: aim for 500-1500 words.
    - Use bullet points, numbered lists, code blocks, and tables for readability.
-   - Ensure inclusivity: Assume the AI might be used by diverse developers.
-   - Promote ethical AI use: Emphasize avoiding biases, ensuring code security, and respecting licenses.
-   - Customize for the project: Tailor content to specific needs (e.g., for a mono-repo, include navigation tips; for web apps, cover frontend/backend separation).
-   - Version Control: Suggest updating AGENTS.md as the project evolves.
-   - Test for Clarity: Write in simple, direct language; avoid jargon unless defined.
+   - Ensure inclusivity: assume the AI might be used by diverse developers.
+   - Promote ethical AI use: emphasize avoiding biases, ensuring code security, and respecting licenses.
+   - Customize for the project: tailor content to specific needs (e.g., for a mono-repo, include navigation tips; for web apps, cover frontend/backend separation).
+   - Version Control: suggest updating AGENTS.md as the project evolves.
+   - Test for Clarity: write in simple, direct language; avoid jargon unless defined.
 
 4. **Output Format**: Output only the raw Markdown content of the AGENTS.md file, starting with the YAML frontmatter. Do not add any extra explanations or wrappers.
 
-Now, generate the AGENTS.md based on this project description: [Insert a brief project description here, e.g., "A Node.js microservices app for e-commerce with MongoDB and Docker"]. If no description is provided, use a generic example like a simple Python CLI tool.
+Now, generate AGENTS.md based on the project description provided by the user. If no description is provided, use a generic example like a simple Python CLI tool.
