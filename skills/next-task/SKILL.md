@@ -10,118 +10,89 @@ disable-model-invocation: true
 
 Autonomous Backlog Task Execution
 
-You are an autonomous coding agent. Your goal is to pick up a task from the backlog, plan it, execute it, and commit the changes—all without human interaction.
+You are an autonomous coding agent. Your goal is to pick up a task from the backlog, plan it, execute it, and commit the changes — all without human interaction.
 
-**IMPORTANT**: If this project doesn't have a backlog.md file, halt your execution and request it. There should be no assumptions made as to where tasks are listed. Your first action should be to verify the presence of the backlog.md file.
+**IMPORTANT**: If this project doesn't have a `.backlog/backlog.md` file, halt and request it. Do not assume where tasks are listed. Your first action should be to verify that `.backlog/backlog.md` exists.
 
 ## Phase 1: Task Selection
 
----
-
-1. Read the `instructions/backlog.md` file (or the backlog file in this repository)
-2. Read the todos that haven't been completed – which are unchecked tasks (`- [ ]`)
+1. Read `.backlog/backlog.md`
+2. Find unchecked tasks (`- [ ]`)
 3. Select ONE task using these priority criteria (in order):
    - Prefer tasks with clear, unambiguous requirements
    - When in doubt, pick the first qualifying task
-4. If a bullet point sub items these will be notes, examples or clarifications they will not be subtasks.
+4. Sub-items under a bullet are notes, examples, or clarifications — not subtasks
 
-**STOP CONDITIONS**: Do NOT proceed if:
+**STOP CONDITIONS** — do NOT proceed if:
 
-- There are no unchecked tasks in the backlog
+- There are no unchecked tasks
 - All remaining tasks are ambiguous or require clarification
-- The task requires external resources, APIs, or credentials you don't have access to
+- The task requires external resources, APIs, or credentials you don't have
 
 ## Phase 2: Planning
 
-Before writing any code:
+Before writing any code, follow the planning methodology in `skills/backlog/plan/SKILL.md` with these adjustments for autonomous mode:
 
-1. **Understand the codebase**: Read relevant files to understand:
-
-   - The project structure and architecture
-   - Existing patterns and conventions
-   - Where the change needs to be made
-
-2. **Create a plan** with:
-
+1. **Understand the codebase**: Read relevant files to understand the project structure, existing patterns, and where changes belong
+2. **Create a lightweight plan** (you may keep it in memory rather than writing a `.backlog/plans/` file):
    - Summary of what the task requires
-   - List of files that need to be modified or created
+   - Files to modify or create
    - Step-by-step implementation approach
    - Potential risks or edge cases
-   - How you will verify the change works
-
-3. **Scope check**: If during planning you discover the task is:
-
-   - Larger than expected (would touch >5 files or >200 lines)
+   - How you will verify the change
+3. **Scope check** — if the task is:
+   - Larger than expected (>5 files or >200 lines)
    - Ambiguous in a way that requires human decision
    - Dependent on another incomplete task
 
-   Then STOP and document why in a comment, and go back to phase 1, and pick a different task and proceed.
+   Then STOP, document why, go back to Phase 1, and pick a different task.
 
 ## Phase 3: Execution
 
-0. Create a new branch from the current branch and give it a meaningful name.
-
-1. Implement the changes following:
-
-   - Existing code style and patterns in the repository
-   - Any coding standards defined in AGENTS.md, CONTRIBUTING.md, or similar md files in the repository.
-   - Language-specific best practices (TypeScript strict mode, linting rules, etc.)
+1. Create a new branch from the current branch with a meaningful name (`feat/[slug]`)
+2. Implement changes following:
+   - Existing code style and patterns
+   - Any coding standards in AGENTS.md, CONTRIBUTING.md, or similar
+   - Language-specific best practices
    - Proper error handling
-
-2. After implementation:
-
-   - Run the project's build command (check `package.json`, `Makefile`, or equivalent for the correct command)
-   - Fix any linter errors you introduced if a linter is configured in the project.
+3. After implementation:
+   - Run the project's build command (check `package.json`, `Makefile`, or equivalent)
+   - Fix any linter errors you introduced
    - Ensure the project compiles without errors
-
-3. **Quality checks**:
-   - Verify your changes match the task requirements as best as you can. (example: checking output in terminal, or runnign a browser session if you can, `d3k` command can help you for browser based projects.)
+4. **Quality checks**:
+   - Verify changes match the task requirements
    - Ensure you haven't broken existing functionality
-   - Keep changes minimal and focused on the task
+   - Keep changes minimal and focused
 
 ## Phase 4: Update Backlog
 
 After successful implementation:
 
-1. Mark the completed task as done by changing `- [ ]` to `- [x]`
-2. If you completed a sub-task, mark only that sub-task as done
-3. Move the completed item to the `## done` section (optional, based on repo convention)
+1. Mark the completed task as done: `- [ ]` → `- [x]`
+2. If you completed a sub-task, mark only that sub-task
 
 ## Phase 5: Commit
 
-Create a git commit with:
-
-1. **Stage only relevant files**:
-
-   - Your code changes
-   - The updated backlog.md
-   - Do NOT stage unrelated files, build artifacts, or sensitive files
-
+1. **Stage only relevant files**: your code changes and the updated backlog
 2. **Commit message format**:
 
    ```
    feat(<scope>): <short description>
 
-   - <bullet point of what was done>
-   - <another bullet point if needed>
+   - <what was done>
+   - <another bullet if needed>
 
    Backlog: <quote or summary of the task>
    ```
 
-3. **Do NOT**:
-   - Push to remote (leave that for human review)
-   - Force push
-   - Amend existing commits
-   - Commit secrets, tokens, or `.env` files
+3. **Do NOT**: push to remote, force push, amend existing commits, or commit secrets
 
 ## Output Summary
-
-After completing all phases, provide a summary:
 
 ```
 ## Task Completed
 
-**Task**: <the task description from backlog>
+**Task**: <task description from backlog>
 
 **Changes Made**:
 - <file1>: <what changed>
@@ -131,14 +102,14 @@ After completing all phases, provide a summary:
 
 **Verification**: <how you verified it works>
 
-**Notes**: <any important observations or follow-up items>
+**Notes**: <observations or follow-up items>
 ```
 
 ## Safety Rules
 
 - NEVER delete files unless the task explicitly requires it
-- NEVER modify authentication, security, or credential-related code without explicit task instruction
-- NEVER run destructive commands (e.g., `rm -rf`, `drop table`)
+- NEVER modify authentication, security, or credential-related code without explicit instruction
+- NEVER run destructive commands
 - NEVER commit without a successful build
 - If something goes wrong, revert your changes and document the issue
-- When uncertain, err on the side of doing less rather than more
+- When uncertain, do less rather than more

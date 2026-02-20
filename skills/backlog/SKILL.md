@@ -34,13 +34,15 @@ Backlog → /triage → PRD → /refine → PRD (refined) → /plan → Plan →
 
 ## Agents
 
-| Agent           | Branch       | Writes To                    | Tools                              |
-| --------------- | ------------ | ---------------------------- | ---------------------------------- |
-| **triager**     | main         | `{paths.prds}/`, `{paths.backlog}` | Read, Write, Glob                  |
-| **refiner**     | main         | `{paths.prds}/`              | Read, Write, Edit, Grep, Glob      |
-| **planner**     | main         | `{paths.plans}/`, `{paths.prds}/` | Read, Write, Edit, Grep, Glob |
-| **implementer** | feature/*    | Source code                  | Read, Write, Edit, Grep, Glob, Bash|
-| **conductor**   | main         | `{paths.action_log}`, orchestrates| Read, Write, Grep, Glob            |
+Agents are minimal — they define role, boundaries, and tools. Methodology lives in skills.
+
+| Agent           | Branch       | Writes To                                   | Methodology Skill              |
+| --------------- | ------------ | ------------------------------------------- | ------------------------------ |
+| **triager**     | main         | `.backlog/prds/`, `.backlog/backlog.md`      | —                              |
+| **refiner**     | main         | `.backlog/prds/`                             | `skills/backlog/refine/SKILL.md` |
+| **planner**     | main         | `.backlog/plans/`, `.backlog/prds/`          | `skills/backlog/plan/SKILL.md`   |
+| **implementer** | feature/*    | Source code                                  | —                              |
+| **conductor**   | main         | `.backlog/action-log.md`, orchestrates       | —                              |
 
 ## Naming Convention
 
@@ -63,11 +65,15 @@ Slugs: lowercase kebab-case, max 30 characters.
 blank → refined → needs_review → approved
 ```
 
+Only a human sets `approved`. The refiner sets `refined` or `needs_review`.
+
 ### Plan Statuses
 
 ```
 draft → needs_review → approved → implemented
 ```
+
+Only a human sets `approved`. The planner sets `draft` or `needs_review`.
 
 ## Human Checkpoints
 
