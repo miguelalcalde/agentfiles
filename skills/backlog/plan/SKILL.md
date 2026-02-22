@@ -1,14 +1,14 @@
 ---
 name: plan
 description: |
-  Create a detailed implementation plan from an approved PRD.
+  Create a detailed implementation plan from a PRD.
   Use when turning a refined PRD into actionable, ordered tasks with file paths and dependencies.
 disable-model-invocation: true
 ---
 
 # Planning Methodology
 
-Create a detailed, actionable implementation plan from an approved PRD.
+Create a detailed, actionable implementation plan from a PRD.
 
 ## Inputs
 
@@ -17,7 +17,7 @@ Create a detailed, actionable implementation plan from an approved PRD.
 
 ## Process
 
-1. **Read the PRD** and verify its status is `approved` (warn if not)
+1. **Read the PRD** and verify its status (proceed if not `approved`, but document assumptions and uncertainty)
 2. **Deep-dive into the codebase**:
    - Identify files to create or modify
    - Understand existing patterns and conventions
@@ -61,7 +61,7 @@ Set this in the plan frontmatter — the implementer uses it to create the corre
 ---
 slug: [slug]
 prd: .backlog/prds/PRD-[slug].md
-status: draft | needs_review | approved
+status: draft | needs_review | approved | implemented | partially_implemented
 planned_at: [timestamp]
 planned_by: agent:planner
 total_tasks: [count]

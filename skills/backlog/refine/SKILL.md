@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Refinement Methodology
 
-Ensure a PRD is complete, well-structured, and ready for planning.
+Ensure a PRD is complete, well-structured, and ready for implementation.
 
 ## Inputs
 

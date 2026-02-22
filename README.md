@@ -160,14 +160,14 @@ When run via `curl | bash`, the installer bootstraps from a temporary clone and 
 Feature workflow command chain:
 
 ```
-/triage -> /refine <slug> -> /plan <slug> -> /implement <slug>
+/triage -> /plan <slug> -> /refine <slug> -> /implement <slug>
 ```
 
 | Command | Agent | Purpose |
 | --- | --- | --- |
 | `/triage` | `triager` | Select next backlog task and create initial PRD |
-| `/refine <slug>` | `refiner` | Complete/validate PRD |
 | `/plan <slug>` | `planner` | Produce implementation plan |
+| `/refine <slug>` | `refiner` | Complete/validate PRD |
 | `/implement <slug>` | `implementer` | Execute plan changes |
 
 In Cursor, invoke the agent directly (for example `/triager`).

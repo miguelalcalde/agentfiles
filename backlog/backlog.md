@@ -4,6 +4,8 @@ description: Tracks all work items for the project.
 format: "- [ ] [FEAT|FIX] [HIGH|MED|LOW] **Name**. Description"
 ---
 
+<!-- FEAT|FIX and HIGH|MED|LOW are placeholders showing allowed values. -->
+
 ## In Progress
 
 ## Pending

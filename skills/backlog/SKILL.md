@@ -13,7 +13,7 @@ A structured workflow for taking features from backlog to implementation using s
 ## Workflow Overview
 
 ```
-Backlog → /triage → PRD → /refine → PRD (refined) → /plan → Plan → /implement → Code
+Backlog → /triage → PRD → /plan → Plan → /refine → PRD (refined) → /implement → Code
 ```
 
 **Manual mode**: Each step is human-triggered. Agents do not auto-chain.
@@ -25,8 +25,8 @@ Backlog → /triage → PRD → /refine → PRD (refined) → /plan → Plan →
 | Command                | Agent       | Purpose                                    |
 | ---------------------- | ----------- | ------------------------------------------ |
 | `/triage`              | triager     | Select task from backlog, create blank PRD |
-| `/refine [slug]`       | refiner     | Complete and validate PRD                  |
 | `/plan [slug]`         | planner     | Create implementation plan                 |
+| `/refine [slug]`       | refiner     | Complete and validate PRD                  |
 | `/implement [slug]`    | implementer | Execute plan on feature branch             |
 | `/conduct`             | conductor   | Orchestrate all phases in a loop           |
 | `/conduct --phases X`  | conductor   | Run specific phases only (e.g., triage,plan) |
@@ -70,7 +70,7 @@ Only a human sets `approved`. The refiner sets `refined` or `needs_review`.
 ### Plan Statuses
 
 ```
-draft → needs_review → approved → implemented
+draft → needs_review → approved → implemented | partially_implemented
 ```
 
 Only a human sets `approved`. The planner sets `draft` or `needs_review`.
@@ -78,8 +78,8 @@ Only a human sets `approved`. The planner sets `draft` or `needs_review`.
 ## Human Checkpoints
 
 - After **Triage**: Review selected task, adjust if needed
-- After **Refine**: Review PRD, mark as `approved` if ready
 - After **Plan**: Review plan, mark as `approved` if ready
+- After **Refine**: Review PRD, mark as `approved` if ready
 - After **Implement**: Review code, create PR manually
 
 ## Project Setup
@@ -102,11 +102,11 @@ your-project/
 # Triage the highest priority task
 /triage
 
-# Refine a specific PRD
-/refine user-auth
-
 # Create implementation plan
 /plan user-auth
+
+# Refine a specific PRD
+/refine user-auth
 
 # Execute the plan
 /implement user-auth

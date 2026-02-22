@@ -17,7 +17,7 @@ tools: [Read, Write, Edit, Grep, Glob, Bash]
 
 You are the **Conductor** agent — an autonomous orchestrator for the backlog pipeline.
 
-Your goal is to pick up a task from the backlog, drive it through triage → refine → plan → implement, and commit the result — all without human interaction.
+Your goal is to pick up a task from the backlog, drive it through triage → plan → refine → implement, and commit the result — all without human interaction.
 
 ## Pre-flight
 
@@ -29,13 +29,7 @@ Follow the triage methodology at `skills/backlog/triage/SKILL.md`.
 
 Select ONE task. If no pending tasks exist, or all remaining tasks are ambiguous or require external resources you don't have, stop and report.
 
-## Phase 2: Refine
-
-Follow the refinement methodology at `skills/backlog/refine/SKILL.md`.
-
-Since you are operating autonomously, set the PRD status to `refined` (not `approved` — only a human approves). If critical information is missing and cannot be inferred from the codebase, note it in Open Questions and proceed with your best judgment.
-
-## Phase 3: Plan
+## Phase 2: Plan
 
 Follow the planning methodology at `skills/backlog/plan/SKILL.md`.
 
@@ -48,6 +42,12 @@ Follow the planning methodology at `skills/backlog/plan/SKILL.md`.
 Then stop, document why in the PRD's Open Questions, update the action log, and go back to Phase 1 to pick a different task.
 
 You may keep the plan lightweight (in memory) rather than writing a full `.backlog/plans/` file if the task is small and straightforward.
+
+## Phase 3: Refine
+
+Follow the refinement methodology at `skills/backlog/refine/SKILL.md`.
+
+Since you are operating autonomously, set the PRD status to `refined` (not `approved` — only a human approves). If critical information is missing and cannot be inferred from the codebase, note it in Open Questions and proceed with your best judgment.
 
 ## Phase 4: Implement
 

@@ -1,7 +1,7 @@
 ---
 slug: [feature-slug]
 prd: .backlog/prds/PRD-[slug].md
-status: draft | needs_review | approved | implemented
+status: draft | needs_review | approved | implemented | partially_implemented
 planned_at: [timestamp]
 planned_by: agent:planner
 implemented_at:
@@ -23,7 +23,7 @@ branch: feat/[slug]
 
 <!-- What must be true before starting implementation -->
 
-- [ ] PRD is approved
+- [ ] PRD is reviewed (refined or approved)
 - [ ] Feature branch created
 - [ ] Dependencies available
 
@@ -37,6 +37,7 @@ branch: feat/[slug]
 - **Action**: Create | Modify
 - **Complexity**: Low | Medium | High
 - **Dependencies**: None
+- **Testing**: Unit | Integration | Manual verification details
 - **Status**: pending | in_progress | complete | blocked
 - **Notes**:
 
@@ -46,6 +47,7 @@ branch: feat/[slug]
 - **Action**: Create | Modify
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Task 1.1
+- **Testing**: Unit | Integration | Manual verification details
 - **Status**: pending | in_progress | complete | blocked
 - **Notes**:
 
@@ -59,6 +61,7 @@ branch: feat/[slug]
 - **Action**: Create | Modify
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Phase 1
+- **Testing**: Unit | Integration | Manual verification details
 - **Status**: pending | in_progress | complete | blocked
 - **Notes**:
 
@@ -72,6 +75,7 @@ branch: feat/[slug]
 - **Action**: Create | Modify
 - **Complexity**: Low | Medium | High
 - **Dependencies**: Phase 2
+- **Testing**: Unit | Integration | Manual verification details
 - **Status**: pending | in_progress | complete | blocked
 - **Notes**:
 
@@ -85,6 +89,7 @@ branch: feat/[slug]
 - **Action**: Modify
 - **Complexity**: Low
 - **Dependencies**: Phase 3
+- **Testing**: Link checks | Docs accuracy verification
 - **Status**: pending | in_progress | complete | blocked
 - **Notes**:
 
