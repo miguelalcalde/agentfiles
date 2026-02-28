@@ -3,7 +3,6 @@ name: refine
 description: |
   Refine a PRD to ensure it is complete, well-structured, and ready for planning.
   Use when iterating on an existing PRD or completing a blank one.
-disable-model-invocation: true
 ---
 
 # Refinement Methodology

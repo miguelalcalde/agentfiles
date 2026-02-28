@@ -3,7 +3,6 @@ name: plan
 description: |
   Create a detailed implementation plan from a PRD.
   Use when turning a refined PRD into actionable, ordered tasks with file paths and dependencies.
-disable-model-invocation: true
 ---
 
 # Planning Methodology

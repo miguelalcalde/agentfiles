@@ -3,7 +3,6 @@ name: implement
 description: |
   Implement an approved plan in small, verifiable steps.
   Use when executing `.backlog/plans/PLAN-[slug].md` tasks on a feature branch with frequent commits and no pushes.
-disable-model-invocation: true
 ---
 
 # Implementation Methodology
@@ -13,6 +12,20 @@ Execute an approved plan safely and incrementally.
 ## Inputs
 
 - **Plan path**: `.backlog/plans/PLAN-[slug].md`
+
+## Commit Authorization
+
+- Treat an explicit implement request (for example, "Implement this now" or `/implement [slug]`) as permission to create local commits while executing the plan.
+- Commit after each logical task/subtask unless the user explicitly asks for a different cadence.
+- If the user explicitly says not to commit, follow that instruction.
+- Never push or create a PR unless the user explicitly asks.
+
+## Commit Authorization
+
+- Treat an explicit implement request (for example, "Implement this now" or `/implement [slug]`) as permission to create local commits while executing the plan.
+- Commit after each logical task/subtask unless the user explicitly asks for a different cadence.
+- If the user explicitly says not to commit, follow that instruction.
+- Never push or create a PR unless the user explicitly asks.
 
 ## Process
 

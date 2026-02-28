@@ -22,27 +22,27 @@ Backlog → /triage → PRD → /plan → Plan → /refine → PRD (refined) →
 
 ## Commands
 
-| Command                | Agent       | Purpose                                    |
-| ---------------------- | ----------- | ------------------------------------------ |
-| `/triage`              | triager     | Select task from backlog, create blank PRD |
-| `/plan [slug]`         | planner     | Create implementation plan                 |
-| `/refine [slug]`       | refiner     | Complete and validate PRD                  |
-| `/implement [slug]`    | implementer | Execute plan on feature branch             |
-| `/conduct`             | conductor   | Orchestrate all phases in a loop           |
-| `/conduct --phases X`  | conductor   | Run specific phases only (e.g., triage,plan) |
-| `/conduct --slug X`    | conductor   | Process specific feature only              |
+| Command               | Agent       | Purpose                                      |
+| --------------------- | ----------- | -------------------------------------------- |
+| `/triage`             | triager     | Select task from backlog, create blank PRD   |
+| `/plan [slug]`        | planner     | Create implementation plan                   |
+| `/refine [slug]`      | refiner     | Complete and validate PRD                    |
+| `/implement [slug]`   | implementer | Execute plan on feature branch               |
+| `/conduct`            | conductor   | Orchestrate all phases in a loop             |
+| `/conduct --phases X` | conductor   | Run specific phases only (e.g., triage,plan) |
+| `/conduct --slug X`   | conductor   | Process specific feature only                |
 
 ## Agents
 
 Agents are minimal — they define role, boundaries, and tools. Methodology lives in skills.
 
-| Agent           | Branch       | Writes To                                   | Methodology Skill                |
-| --------------- | ------------ | ------------------------------------------- | -------------------------------- |
-| **triager**     | main         | `.backlog/prds/`, `.backlog/backlog.md`      | `skills/backlog/triage/SKILL.md` |
-| **refiner**     | main         | `.backlog/prds/`                             | `skills/backlog/refine/SKILL.md` |
-| **planner**     | main         | `.backlog/plans/`, `.backlog/prds/`          | `skills/backlog/plan/SKILL.md`   |
-| **implementer** | feature/*    | Source code                                  | `skills/backlog/implement/SKILL.md` |
-| **conductor**   | main + feat  | `.backlog/`, source code, action log         | Orchestrates all of the above    |
+| Agent           | Branch      | Writes To                               | Methodology Skill                   |
+| --------------- | ----------- | --------------------------------------- | ----------------------------------- |
+| **triager**     | main        | `.backlog/prds/`, `.backlog/backlog.md` | `skills/backlog/triage/SKILL.md`    |
+| **refiner**     | main        | `.backlog/prds/`                        | `skills/backlog/refine/SKILL.md`    |
+| **planner**     | main        | `.backlog/plans/`, `.backlog/prds/`     | `skills/backlog/plan/SKILL.md`      |
+| **implementer** | feature/\*  | Source code                             | `skills/backlog/implement/SKILL.md` |
+| **conductor**   | main + feat | `.backlog/`, source code, action log    | Orchestrates all of the above       |
 
 ## Naming Convention
 
