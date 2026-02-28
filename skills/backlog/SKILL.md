@@ -41,7 +41,7 @@ Agents are minimal — they define role, boundaries, and tools. Methodology live
 | **triager**     | main         | `.backlog/prds/`, `.backlog/backlog.md`      | `skills/backlog/triage/SKILL.md` |
 | **refiner**     | main         | `.backlog/prds/`                             | `skills/backlog/refine/SKILL.md` |
 | **planner**     | main         | `.backlog/plans/`, `.backlog/prds/`          | `skills/backlog/plan/SKILL.md`   |
-| **implementer** | feature/*    | Source code                                  | —                                |
+| **implementer** | feature/*    | Source code                                  | `skills/backlog/implement/SKILL.md` |
 | **conductor**   | main + feat  | `.backlog/`, source code, action log         | Orchestrates all of the above    |
 
 ## Naming Convention
