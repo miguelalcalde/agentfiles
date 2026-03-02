@@ -22,33 +22,31 @@ plan:
 
 ## Proposed Solution
 
-<!-- High-level description of the solution -->
+<!-- Describe what the feature does from the user's perspective, not how it's built. -->
 
 [To be filled]
 
-## Technical Requirements
+## User Experience
 
-### API Changes
-
-<!-- New or modified endpoints, request/response formats -->
+<!-- What does the user see, do, and feel? Describe the journey, not the components. -->
 
 [To be filled]
 
-### Data Model Changes
+## Functional Requirements
 
-<!-- Database schema changes, new models, migrations -->
+<!-- What must the system do? Describe observable behaviors, not how to build them. -->
 
-[To be filled]
+- [To be filled]
 
-### UI/UX Requirements
+## Non-Functional Requirements
 
-<!-- Component changes, new screens, user flows -->
+<!-- Performance expectations, security constraints, accessibility, scale, etc. -->
 
-[To be filled]
+- [To be filled]
 
 ## Dependencies
 
-<!-- External libraries, services, or internal features this depends on -->
+<!-- Features, decisions, or external factors this depends on (not libraries or technical choices) -->
 
 - [To be filled]
 

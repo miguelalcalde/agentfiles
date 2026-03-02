@@ -29,9 +29,9 @@ Ensure a PRD is complete, well-structured, and ready for implementation.
 ## Quality Checklist
 
 - [ ] Problem statement is clear and specific
-- [ ] Proposed solution is technically feasible
-- [ ] Acceptance criteria are testable
-- [ ] Dependencies are identified
+- [ ] Solution is described from the user's perspective, not as a technical design
+- [ ] Acceptance criteria are testable and behavior-focused
+- [ ] Dependencies are product-level (no libraries, schemas, or architecture)
 - [ ] Out of scope is defined
 - [ ] Open questions are documented (if any)
 
@@ -60,6 +60,10 @@ The refiner sets status to `refined` or `needs_review`. Only a human sets `appro
 - Preserve any human edits or comments in the PRD
 - Each refinement increments the `iterations` counter
 - Be specific and actionable — avoid vague requirements
+- Do not prescribe technical solutions — no database schemas, component architecture,
+  API designs, or library choices. That translation happens during planning.
+- If the PRD contains implementation details inherited from a previous draft, move them
+  to `Open Questions` as context for the planner, not as requirements.
 
 ## Write Boundaries
 
