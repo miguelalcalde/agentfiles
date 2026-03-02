@@ -11,14 +11,7 @@ Execute an approved plan safely and incrementally.
 
 ## Inputs
 
-- **Plan path**: `.backlog/plans/PLAN-[slug].md`
-
-## Commit Authorization
-
-- Treat an explicit implement request (for example, "Implement this now" or `/implement [slug]`) as permission to create local commits while executing the plan.
-- Commit after each logical task/subtask unless the user explicitly asks for a different cadence.
-- If the user explicitly says not to commit, follow that instruction.
-- Never push or create a PR unless the user explicitly asks.
+- **Plan path**: `.backlog/plans/PLAN-[slug].md` (or `~/.cursor/plans/[slug].plan.md` if referenced by the user)
 
 ## Commit Authorization
 
@@ -30,7 +23,10 @@ Execute an approved plan safely and incrementally.
 ## Process
 
 1. **Read the plan** and verify status is `approved`
-2. **Use the plan branch** from frontmatter (`branch: feat/[slug]`)
+2. **Branch setup**:
+   - Ensure the base branch (`main` unless the plan specifies another) is up to date: `git pull --ff-only`
+   - Create or switch to the plan branch from frontmatter: `git checkout -b feat/[slug]` (or `git checkout feat/[slug]` if it already exists)
+   - If the branch already exists, rebase onto the latest base: `git rebase main`
 3. **Implement tasks in order**:
    - Make the smallest useful change
    - Run relevant lint/tests
@@ -43,9 +39,22 @@ Execute an approved plan safely and incrementally.
 
 ## Commit Guidance
 
+- Branch from the latest base branch before starting work
 - Commit after each logical task or subtask
 - Prefer small commits over large batches
 - Keep commit messages specific to the completed task
+- Use conventional commit format: `feat(<slug>): <description>`
+- Never amend commits that have already been created
+- Never force push
+
+## Output
+
+After completing, report:
+
+- What changed (files and summary of modifications)
+- What was validated (lint/test results)
+- Updated plan status
+- Any blockers or follow-up items
 
 ## Rules
 
@@ -55,8 +64,11 @@ Execute an approved plan safely and incrementally.
 - NEVER create PRs automatically
 - NEVER force push
 - NEVER sign commits (`-S`, `--gpg-sign`)
+- If tests/checks fail and the fix is not obvious, stop and ask the user for input
 
 ## Write Boundaries
 
 - Source code files required by the approved plan
 - `.backlog/plans/*.md` for task/status updates
+
+Do not write anywhere else unless the plan explicitly requires it. Read the entire codebase freely.

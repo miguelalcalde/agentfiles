@@ -3,6 +3,7 @@ name: implementer
 description: |
   Use this agent to implement a feature from an approved plan.
   IMPORTANT: This agent works on a feature branch only.
+  Always branches from the latest base branch and commits frequently.
 
   <example>
   user: "Implement user-auth"

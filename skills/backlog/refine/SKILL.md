@@ -65,6 +65,15 @@ The refiner sets status to `refined` or `needs_review`. Only a human sets `appro
 - If the PRD contains implementation details inherited from a previous draft, move them
   to `Open Questions` as context for the planner, not as requirements.
 
+## Output
+
+After completing, report:
+
+- Updated PRD path
+- Quality score and number of open questions
+- Sections that were added or significantly changed
+- Any concerns about missing information
+
 ## Write Boundaries
 
 Only write to files within `.backlog/`:

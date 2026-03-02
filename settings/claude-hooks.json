@@ -1,0 +1,25 @@
+{
+  "_comment": "Merge this into your project's .claude/settings.json to enable write-path enforcement for backlog agents.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_AGENT_NAME=\"${CLAUDE_AGENT_NAME:-unknown}\" .agents/scripts/validate-write-path.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_AGENT_NAME=\"${CLAUDE_AGENT_NAME:-unknown}\" .agents/scripts/validate-write-path.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

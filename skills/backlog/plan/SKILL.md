@@ -75,6 +75,24 @@ The `branch` field is **required**.
 
 The planner sets status to `draft` or `needs_review`. Only a human sets `approved`.
 
+## Output
+
+After completing, report:
+
+- The plan path created
+- Number of tasks and estimated complexity
+- Any assumptions made due to non-approved PRD status
+- Dependencies or risks identified
+
+## Rules
+
+- Proceed even if the PRD is not approved, but document assumptions and uncertainty
+- Every task must be completable in 1-2 hours
+- Include exact file paths and function names where possible
+- Consider edge cases and error handling
+- Only a human sets status to `approved`
+- The `branch` field in frontmatter is required
+
 ## Write Boundaries
 
 Only write to files within `.backlog/`:

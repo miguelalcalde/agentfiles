@@ -1111,6 +1111,27 @@ if [ "$COMMANDS_REQUESTED" = true ]; then
     done
 fi
 
+# Install hook scripts alongside agents/skills/commands
+if [ "$AGENTS_REQUESTED" = true ] || [ "$SKILLS_REQUESTED" = true ]; then
+    if [ -d "$SCRIPT_DIR/scripts" ]; then
+        echo ""
+        echo -e "${CYAN}Scripts${NC}:"
+        local_scripts_dir="$CANONICAL_ROOT/scripts"
+        if [ "$DRY_RUN" = false ]; then
+            mkdir -p "$local_scripts_dir"
+        fi
+        for script_file in "$SCRIPT_DIR/scripts"/*.sh; do
+            [ -f "$script_file" ] || continue
+            local_name="$(basename "$script_file")"
+            install_entry "$script_file" "$local_scripts_dir/$local_name" "copy" "file"
+            if [ "$DRY_RUN" = false ]; then
+                chmod +x "$local_scripts_dir/$local_name"
+            fi
+        done
+        echo -e "  ${GRAY}To enable write-path enforcement, merge settings/claude-hooks.json into your project's .claude/settings.json${NC}"
+    fi
+fi
+
 if [ "$FILES_REQUESTED" = true ]; then
     echo ""
     echo -e "${CYAN}Files${NC}: ${SELECTED_FILE_GROUPS[*]}"
