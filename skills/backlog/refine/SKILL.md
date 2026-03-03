@@ -7,12 +7,22 @@ description: |
 
 # Refinement Methodology
 
-Ensure a PRD is complete, well-structured, and ready for implementation.
+Ensure a PRD is complete, well-structured, and ready for planning.
 
 ## Inputs
 
 - **PRD path**: `.backlog/prds/PRD-[slug].md` (or a custom location provided by the user)
 - **PRD template**: `skills/backlog/templates/prd-template.md`
+
+## Invocation
+
+This methodology is tool-agnostic. It can be run via direct prompts, subagents,
+or command wrappers.
+
+Prompt examples:
+
+- "Use the refiner workflow to refine PRD-[slug] using `skills/backlog/refine/SKILL.md`."
+- "Review `.backlog/prds/PRD-[slug].md` against the PRD template and update frontmatter status to `refined` or `needs_review`."
 
 ## Process
 

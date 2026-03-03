@@ -15,7 +15,7 @@ Execute an approved plan safely and incrementally.
 
 ## Commit Authorization
 
-- Treat an explicit implement request (for example, "Implement this now" or `/implement [slug]`) as permission to create local commits while executing the plan.
+- Treat an explicit implement request (for example, "Implement this now" or "run the implement workflow for [slug]") as permission to create local commits while executing the plan.
 - Commit after each logical task/subtask unless the user explicitly asks for a different cadence.
 - If the user explicitly says not to commit, follow that instruction.
 - Never push or create a PR unless the user explicitly asks.
@@ -65,6 +65,19 @@ After completing, report:
 - NEVER force push
 - NEVER sign commits (`-S`, `--gpg-sign`)
 - If tests/checks fail and the fix is not obvious, stop and ask the user for input
+
+### Drizzle rules
+
+Use this strict contract for every migration:
+
+- **Migration unit must be complete**: `drizzle/<tag>.sql` + `drizzle/meta/<nnnn>_snapshot.json` + `_journal.json` entry.
+- **Never edit existing old migration files** after they’ve shipped.
+- **Never hand-edit `_journal.json`** unless explicitly instructed to do so.
+- **CI gate**: fail if a journal entry has no corresponding snapshot sequence file.
+- **CI gate**: fail if a new migration touches tables outside intended scope (e.g., feature says tobacco-only, SQL touches Strator).
+- **Environment safety**: use explicit branch-specific DB URL checks before the user runs `db:migrate` (your `.env.local` prod URL being active is a real risk factor).
+- **Never run db:migrate**. or migrations in general.
+- **You can run db:generate** to generate a new migrations files.
 
 ## Write Boundaries
 

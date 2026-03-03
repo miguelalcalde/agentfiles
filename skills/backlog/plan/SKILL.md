@@ -2,7 +2,7 @@
 name: plan
 description: |
   Create a detailed implementation plan from a PRD.
-  Use when turning a refined PRD into actionable, ordered tasks with file paths and dependencies.
+  Use when turning a PRD into actionable, ordered tasks with file paths and dependencies.
 ---
 
 # Planning Methodology
@@ -13,6 +13,16 @@ Create a detailed, actionable implementation plan from a PRD.
 
 - **PRD path**: `.backlog/prds/PRD-[slug].md` (or a custom location provided by the user)
 - **Plan template**: `skills/backlog/templates/plan-template.md`
+
+## Invocation
+
+This methodology is tool-agnostic. It can be run via direct prompts, subagents,
+or command wrappers.
+
+Prompt examples:
+
+- "Use the planner workflow to create an implementation plan for [slug] using `skills/backlog/plan/SKILL.md`."
+- "Create `.backlog/plans/PLAN-[slug].md` from the PRD and update the PRD frontmatter with the plan path."
 
 ## Process
 

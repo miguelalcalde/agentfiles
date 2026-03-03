@@ -13,24 +13,27 @@ A structured workflow for taking features from backlog to implementation using s
 ## Workflow Overview
 
 ```
-Backlog → /triage → PRD → /plan → Plan → /refine → PRD (refined) → /implement → Code
+Backlog → Triage → PRD → Plan → Refine → PRD (refined) → Implement → Code
 ```
 
 **Manual mode**: Each step is human-triggered. Agents do not auto-chain.
 
-**Conductor mode**: Run `/conduct` to orchestrate all phases automatically until complete or blocked.
+**Conductor mode**: Run the conductor workflow to orchestrate all phases automatically until complete or blocked.
 
-## Commands
+## Workflow Actions
 
-| Command               | Agent       | Purpose                                      |
-| --------------------- | ----------- | -------------------------------------------- |
-| `/triage`             | triager     | Select task from backlog, create blank PRD   |
-| `/plan [slug]`        | planner     | Create implementation plan                   |
-| `/refine [slug]`      | refiner     | Complete and validate PRD                    |
-| `/implement [slug]`   | implementer | Execute plan on feature branch               |
-| `/conduct`            | conductor   | Orchestrate all phases in a loop             |
-| `/conduct --phases X` | conductor   | Run specific phases only (e.g., triage,plan) |
-| `/conduct --slug X`   | conductor   | Process specific feature only                |
+| Action                | Agent       | Purpose                                       | Optional command alias |
+| --------------------- | ----------- | --------------------------------------------- | ---------------------- |
+| Triage                | triager     | Select task from backlog, create blank PRD    | `/triage`              |
+| Plan `[slug]`         | planner     | Create implementation plan                    | `/plan [slug]`         |
+| Refine `[slug]`       | refiner     | Complete and validate PRD                     | `/refine [slug]`       |
+| Implement `[slug]`    | implementer | Execute plan on feature branch                | `/implement [slug]`    |
+| Conduct               | conductor   | Orchestrate all phases in a loop              | `/conduct`             |
+| Conduct phased run    | conductor   | Run specific phases only (e.g., triage,plan)  | `/conduct --phases X`  |
+| Conduct targeted run  | conductor   | Process specific feature only                 | `/conduct --slug X`    |
+
+Slash commands are optional convenience wrappers. The workflow is designed to
+work with plain prompts and subagent invocation across tools.
 
 ## Agents
 
@@ -100,32 +103,32 @@ your-project/
 
 ```bash
 # Triage the highest priority task
-/triage
+"Use the triager agent to pick the highest-priority pending task and create a PRD."
 
 # Create implementation plan
-/plan user-auth
+"Use the planner agent to create the implementation plan for user-auth."
 
 # Refine a specific PRD
-/refine user-auth
+"Use the refiner agent to refine PRD-user-auth."
 
 # Execute the plan
-/implement user-auth
+"Use the implementer agent to implement the approved plan for user-auth."
 ```
 
 ### Conductor Mode (automated)
 
 ```bash
 # Run full pipeline until complete or blocked
-/conduct
+"Use the conductor agent to run the backlog pipeline until complete or blocked."
 
 # Run only triage and plan phases
-/conduct --phases triage,plan
+"Use the conductor agent and run only phases: triage,plan."
 
 # Process specific feature only
-/conduct --slug user-auth
+"Use the conductor agent and process only slug: user-auth."
 
 # Named conductor for parallel operation
-/conduct --name frontend --phases triage,plan
+"Use conductor name frontend and run phases triage,plan."
 ```
 
 ### Parallel Conductors
@@ -134,11 +137,11 @@ Multiple conductors can run in parallel when handling different phases:
 
 ```bash
 # Terminal 1: Create PRDs and plans
-/conduct --name frontend --phases triage,plan
+"Use conductor name frontend and run phases triage,plan."
 
 # Terminal 2: Review plans
-/conduct --name reviewer --phases refine
+"Use conductor name reviewer and run phase refine."
 
 # Terminal 3: Implement approved plans
-/conduct --name builder --phases implement
+"Use conductor name builder and run phase implement."
 ```
