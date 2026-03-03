@@ -78,6 +78,7 @@ Use this strict contract for every migration:
 - **Environment safety**: use explicit branch-specific DB URL checks before the user runs `db:migrate` (your `.env.local` prod URL being active is a real risk factor).
 - **Never run db:migrate**. or migrations in general.
 - **You can run db:generate** to generate a new migrations files.
+- **Never set the DB URL manually**. Only use user defined environment variables.
 
 ## Write Boundaries
 
