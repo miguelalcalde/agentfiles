@@ -2,17 +2,18 @@
 
 ## Repository Purpose
 
-This repository publishes a single installable skill named `backlog`.
+This repository publishes installable skills.
 
-Expected install command:
+Expected install commands:
 
 ```bash
 npx skills add mikemajara/skills --skill backlog
+npx skills add mikemajara/skills --skill todoist-api
 ```
 
-Keep the repository focused on this one skill. Do not reintroduce the previous
-portable agent framework, slash commands, setup script, global installer, or
-project scaffold files unless explicitly requested.
+Keep the repository focused on small, self-contained skills. Do not reintroduce
+the previous portable agent framework, slash commands, setup script, global
+installer, or project scaffold files unless explicitly requested.
 
 ## Current Shape
 
@@ -24,6 +25,9 @@ CHANGELOG.md
 CLAUDE.md
 skills/backlog/SKILL.md
 skills/backlog/scripts/backlog-sync.mjs
+skills/todoist-api/SKILL.md
+skills/todoist-api/references/endpoints.md
+skills/todoist-api/references/api-semantics.md
 ```
 
 The `backlog` skill is intentionally self-contained. It teaches an LLM how to
@@ -44,8 +48,12 @@ Default structure created by the skill:
 ## Design Decisions
 
 - Skill name must remain `backlog`.
+- Todoist API skill name must remain `todoist-api`.
 - Prefer one self-contained `SKILL.md`; keep helper scripts optional, small,
   dependency-free, and directly tied to the `backlog` workflow.
+- Keep `todoist-api` as API mechanics/reference only. Task workflow,
+  project defaults, date defaults, and user preferences belong in the consuming
+  agent's instructions, not in the skill.
 - The skill should encode judgment, not ceremony.
 - GitHub Issues are canonical for promoted work.
 - `.backlog/inbox.md` is for rough ideas not yet promoted to GitHub Issues.
@@ -65,10 +73,9 @@ commit `2778632` to make this repo a clean source for only the `backlog` skill.
 
 ## Development Notes
 
-- Before changing the skill, read `skills/backlog/SKILL.md` and keep it concise.
+- Before changing a skill, read its `SKILL.md` and keep it concise.
 - Preserve compatibility with the `skills/<name>/SKILL.md` layout.
-- If adding files, make sure they directly support installing or using the
-  `backlog` skill.
+- If adding files, make sure they directly support installing or using a skill.
 - Update `CHANGELOG.md` when changing the generated `.backlog/` structure,
   migration expectations, or user-visible workflow semantics.
 - Do not add generated project `.backlog/` files to this repository; the skill

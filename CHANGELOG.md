@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+- Added `todoist-api`, a Todoist API v1 reference skill for direct HTTP
+  integrations. It documents authentication, endpoint paths, request fields,
+  pagination, error handling, and migration caveats without encoding personal
+  task-management workflow rules.
+
+### Changed
+
+- Tightened `todoist-api` to API reference only: removed TypeScript client
+  helpers from references and replaced `implementation.md` with
+  `api-semantics.md` (errors, field semantics, pagination, migration).
+- Added `skills/backlog/scripts/backlog-sync.mjs`, an optional dependency-free
+  helper that downstream projects can run or copy to regenerate
+  `.backlog/issues.md` from GitHub Issues with the GitHub CLI.
+
 ### Changed
 
 - Simplified promoted-issue types and GitHub labels: `nitpick`/`chore`/`research`
@@ -36,12 +52,6 @@ npx skills add mikemajara/skills --skill backlog
   delete them or keep a tiny pointer file. GitHub Issues own the canonical
   title, body, status, labels, and discussion—do not maintain duplicate
   editable copies in `.backlog/`.
-
-### Added
-
-- Added `skills/backlog/scripts/backlog-sync.mjs`, an optional dependency-free
-  helper that downstream projects can run or copy to regenerate
-  `.backlog/issues.md` from GitHub Issues with the GitHub CLI.
 
 ### Migration Notes
 

@@ -1,12 +1,20 @@
 # Agentfiles
 
-This repository publishes one installable skill: `backlog`.
+This repository publishes installable skills.
 
-Install it with:
+Install the backlog skill with:
 
 ```bash
 npx skills add mikemajara/skills --skill backlog
 ```
+
+Install the Todoist API skill with:
+
+```bash
+npx skills add mikemajara/skills --skill todoist-api
+```
+
+## backlog
 
 The skill gives an LLM a simple project workflow for bootstrapping and using a
 local `.backlog/` folder while treating GitHub Issues as canonical for promoted
@@ -50,3 +58,10 @@ projects can run from the installed skill or copy into their own `scripts/`
 directory. It regenerates `.backlog/issues.md` from GitHub Issues with the
 GitHub CLI, discovering the repo from `git config --get remote.origin.url` by
 default.
+
+## todoist-api
+
+The `todoist-api` skill is a Todoist API v1 reference for agents that need to
+build or operate direct Todoist HTTP integrations. It covers authentication,
+endpoint paths, request fields, pagination, error handling, and migration
+caveats without encoding personal task-management workflow rules.
