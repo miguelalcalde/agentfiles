@@ -3,8 +3,9 @@ name: backlog
 description: |
   Lightweight project backlog workflow. Use when starting a project, creating or
   maintaining a `.backlog/` folder, capturing inbox ideas, promoting work to
-  GitHub Issues, refining work into PRDs, planning implementation, or keeping
-  project task memory current without a larger agent framework.
+  GitHub Issues, checking for duplicate or overlapping tasks before add or
+  promote, refining work into PRDs, planning implementation, or keeping project
+  task memory current without a larger agent framework.
 ---
 
 # Backlog
@@ -132,6 +133,72 @@ Examples:
 - `Repair login redirect` -> `login-redirect`
 - `Dashboard analytics` -> `dashboard-analytics`
 
+## Verify Before Add or Promote
+
+Before adding an inbox item, creating a PRD or plan, or promoting work to
+GitHub Issues, check whether the task already exists or overlaps with tracked
+work. Do this every time unless the user explicitly asked to skip dedupe.
+
+### Local checks
+
+1. Read `.backlog/inbox.md` and scan titles, types, and short descriptions.
+2. Read `.backlog/issues.md`. If missing, stale, or the project uses GitHub
+   sync, regenerate it first:
+
+   ```bash
+   node scripts/backlog-sync.mjs
+   ```
+
+3. List `.backlog/prds/` and `.backlog/plans/` for matching slugs, titles, or
+   scope.
+4. Skim `.backlog/memory.md` for decisions, blockers, or gotchas that already
+   cover the idea.
+
+### Cloud checks
+
+Prefer live GitHub search when `gh` is available:
+
+```bash
+gh issue list --state all --search "login redirect" --limit 20
+gh issue list --state open --label "type:fix" --limit 50
+gh issue view 123
+gh pr list --state open --search "login redirect" --limit 10
+```
+
+Use keywords from the proposed title, affected area, error message, file path,
+or user-facing symptom. Search open issues first, then closed issues when the
+bug or feature may already have been filed or finished.
+
+When `gh` is unavailable, rely on a fresh `.backlog/issues.md` snapshot and
+search that file instead.
+
+### Overlap signals
+
+Treat these as likely duplicates or related work, not just exact title matches:
+
+- Same symptom, bug, or user-facing behavior
+- Same subsystem, route, component, or file path
+- Same or near-identical slug
+- One item is a subset or superset of another (`fix login redirect` vs
+  `auth overhaul`)
+- An open PR, plan, or PRD already tracks the same outcome
+
+### When overlap is found
+
+- **Exact duplicate**: do not add or promote. Link to the existing inbox item,
+  issue, PRD, or plan.
+- **Same work, different wording**: update or comment on the existing artifact.
+  Do not create a second tracker.
+- **Related but distinct**: create only if scope is genuinely separate. Cross-link
+  in the body (`Related to #123`) or use GitHub blocked-by / blocks references
+  when one depends on the other.
+- **Superseded**: close, remove, or archive the stale item and point to the
+  canonical one.
+- **Uncertain**: tell the user what matched and ask whether to extend the
+  existing item or create a new one.
+
+After resolving overlap, proceed with Capture, Promote, Refine, or Plan.
+
 ## Workflow
 
 ### Capture
@@ -139,12 +206,13 @@ Examples:
 When the user shares an idea, bug, nitpick, or task:
 
 1. Ensure `.backlog/` exists if the user wants the backlog workflow active.
-2. If the item is rough or not ready for GitHub, add it under `## Inbox` in
+2. Run **Verify Before Add or Promote** against local and cloud trackers.
+3. If the item is rough or not ready for GitHub, add it under `## Inbox` in
    `.backlog/inbox.md`.
-3. If the item is ready to track, create or update a GitHub Issue when the user
+4. If the item is ready to track, create or update a GitHub Issue when the user
    wants GitHub-backed tracking.
-4. Choose type and priority from the user's wording and project context.
-5. Keep the item short. Put deeper context in a PRD only when needed.
+5. Choose type and priority from the user's wording and project context.
+6. Keep the item short. Put deeper context in a PRD only when needed.
 
 Do not add manually maintained task lists to `.backlog/issues.md`.
 
@@ -152,16 +220,18 @@ Do not add manually maintained task lists to `.backlog/issues.md`.
 
 When promoting local work to GitHub Issues:
 
-1. If the work has a PRD, create or update the GitHub Issue from the PRD
+1. Run **Verify Before Add or Promote** again, focusing on GitHub Issues and
+   any open PRs for the same area.
+2. If the work has a PRD, create or update the GitHub Issue from the PRD
    content.
-2. Verify the GitHub Issue contains the canonical title, body, labels, and
+3. Verify the GitHub Issue contains the canonical title, body, labels, and
    acceptance criteria.
-3. Remove the inbox item or replace it with the issue URL.
-4. Delete the promoted PRD unless the user explicitly wants a tiny pointer file.
-5. If keeping a pointer file, include only frontmatter and a short note that the
+4. Remove the inbox item or replace it with the issue URL.
+5. Delete the promoted PRD unless the user explicitly wants a tiny pointer file.
+6. If keeping a pointer file, include only frontmatter and a short note that the
    GitHub Issue is canonical.
-6. Choose labels from the user's wording and project context.
-7. Regenerate `.backlog/issues.md` if the project has sync tooling.
+7. Choose labels from the user's wording and project context.
+8. Regenerate `.backlog/issues.md` if the project has sync tooling.
 
 Pointer file example:
 
@@ -218,7 +288,9 @@ When choosing what to work on:
 
 ### Refine
 
-Create a PRD only when the task benefits from product-level clarification:
+Create a PRD only when the task benefits from product-level clarification.
+First run **Verify Before Add or Promote** so the PRD does not duplicate an
+existing issue, inbox item, or plan.
 
 - user-facing feature
 - ambiguous behavior
@@ -271,7 +343,8 @@ Use statuses:
 
 ### Plan
 
-Create a plan only when implementation needs sequencing:
+Create a plan only when implementation needs sequencing. First run **Verify
+Before Add or Promote** so the plan does not duplicate existing tracked work.
 
 - multiple files or subsystems
 - migration, data, auth, payments, security, or deployment risk
@@ -388,6 +461,8 @@ backlog:
 ## Rules
 
 - Prefer the smallest useful artifact.
+- Verify local and cloud trackers for duplicates and overlap before adding or
+  promoting work.
 - Do not require PRDs for small fixes.
 - Do not require plans for obvious one-step changes.
 - Keep inbox entries readable in plain Markdown.

@@ -4,6 +4,10 @@
 
 ### Added
 
+- Added dedupe guidance to `backlog`: verify local `.backlog/` artifacts and
+  GitHub Issues (via `gh` or regenerated `.backlog/issues.md`) before adding
+  inbox items, PRDs, plans, or promoted issues; includes overlap signals and
+  resolution rules for exact duplicates, related work, and superseded items.
 - Added `todoist-api`, a Todoist API v1 reference skill for direct HTTP
   integrations. It documents authentication, endpoint paths, request fields,
   pagination, error handling, and migration caveats without encoding personal
