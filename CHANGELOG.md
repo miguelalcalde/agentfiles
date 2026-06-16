@@ -5,9 +5,9 @@
 ### Added
 
 - Added dedupe guidance to `backlog`: verify local `.backlog/` artifacts and
-  GitHub Issues (via `gh` or regenerated `.backlog/issues.md`) before adding
-  inbox items, PRDs, plans, or promoted issues; includes overlap signals and
-  resolution rules for exact duplicates, related work, and superseded items.
+  GitHub Issues before adding inbox items, PRDs, plans, or promoted issues;
+  includes overlap signals and resolution rules for exact duplicates, related
+  work, and superseded items.
 - Added `todoist-api`, a Todoist API v1 reference skill for direct HTTP
   integrations. It documents authentication, endpoint paths, request fields,
   pagination, error handling, and migration caveats without encoding personal
@@ -18,9 +18,8 @@
 - Tightened `todoist-api` to API reference only: removed TypeScript client
   helpers from references and replaced `implementation.md` with
   `api-semantics.md` (errors, field semantics, pagination, migration).
-- Added `skills/backlog/scripts/backlog-sync.mjs`, an optional dependency-free
-  helper that downstream projects can run or copy to regenerate
-  `.backlog/issues.md` from GitHub Issues with the GitHub CLI.
+- Simplified `backlog` by removing the local GitHub Issues mirror and sync
+  helper; promoted work should be checked in GitHub directly.
 
 ### Changed
 
@@ -40,7 +39,6 @@ npx skills add mikemajara/skills --skill backlog
 ```text
 .backlog/
   inbox.md
-  issues.md
   prds/
   plans/
   memory.md
@@ -48,7 +46,6 @@ npx skills add mikemajara/skills --skill backlog
 
 - `.backlog/inbox.md` replaces `.backlog/backlog.md` for rough ideas and tasks
   that are not yet promoted to GitHub Issues.
-- `.backlog/issues.md` is a generated/read-only mirror of GitHub Issues.
 - `.backlog/memory.md` replaces `.backlog/notes.md` for curated decisions,
   conventions, blockers, gotchas, and durable agent context.
 - PRD and plan templates now include an optional `issue` frontmatter field.
@@ -65,7 +62,6 @@ For projects already using an older `.backlog/` layout:
 
 ```text
 .backlog/inbox.md
-.backlog/issues.md
 .backlog/memory.md
 ```
 
@@ -76,20 +72,8 @@ For projects already using an older `.backlog/` layout:
    - Move rough, unpromoted items into `.backlog/inbox.md` under `## Inbox`.
    - Promote trackable work to GitHub Issues.
    - Preserve links from related PRDs and plans to their GitHub Issues.
-4. Create or regenerate `.backlog/issues.md` from GitHub Issues. Include this
-   header:
-
-```markdown
-<!-- GENERATED FROM GITHUB ISSUES. DO NOT EDIT DIRECTLY. -->
-```
-
-5. To enable local GitHub sync, run `skills/backlog/scripts/backlog-sync.mjs`
-   from the installed skill or copy it into the downstream project as
-   `scripts/backlog-sync.mjs`. The helper discovers the repo from
-   `git config --get remote.origin.url`; pass `--repo owner/repo` only when
-   overriding that default. If the project has `package.json`, add a script such
-   as `"backlog:sync": "node scripts/backlog-sync.mjs"`.
-6. Stop manually maintaining `.backlog/backlog.md` once GitHub Issues are
+4. Remove `.backlog/issues.md` if it was only a generated GitHub Issues mirror.
+5. Stop manually maintaining `.backlog/backlog.md` once GitHub Issues are
    canonical. Remove or archive it only after confirming its content has moved
    to the inbox, GitHub Issues, PRDs, plans, or memory.
 

@@ -24,7 +24,6 @@ README.md
 CHANGELOG.md
 CLAUDE.md
 skills/backlog/SKILL.md
-skills/backlog/scripts/backlog-sync.mjs
 skills/todoist-api/SKILL.md
 skills/todoist-api/references/endpoints.md
 skills/todoist-api/references/api-semantics.md
@@ -39,7 +38,6 @@ Default structure created by the skill:
 ```text
 .backlog/
   inbox.md
-  issues.md
   prds/
   plans/
   memory.md
@@ -57,8 +55,6 @@ Default structure created by the skill:
 - The skill should encode judgment, not ceremony.
 - GitHub Issues are canonical for promoted work.
 - `.backlog/inbox.md` is for rough ideas not yet promoted to GitHub Issues.
-- `.backlog/issues.md` is generated/read-only local visibility into GitHub
-  Issues.
 - `.backlog/memory.md` is curated context future agents should remember.
 - PRDs are created only when product-level clarification helps.
 - Plans are created only when implementation needs sequencing, risk tracking, or

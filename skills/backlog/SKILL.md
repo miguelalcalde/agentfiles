@@ -24,7 +24,6 @@ explicitly asks to initialize the backlog, create:
 ```text
 .backlog/
   inbox.md
-  issues.md
   prds/
   plans/
   memory.md
@@ -34,7 +33,6 @@ Use these roles:
 
 - `.backlog/inbox.md`: raw ideas, bugs, chores, and nitpicks not yet promoted
   to GitHub Issues.
-- `.backlog/issues.md`: generated, read-only mirror of GitHub Issues.
 - `.backlog/prds/PRD-[slug].md`: temporary drafting artifact for large or
   ambiguous work before it is promoted to GitHub. After promotion, delete it or
   replace it with a tiny pointer only if the user wants local traceability.
@@ -59,16 +57,6 @@ Create `.backlog/inbox.md` with:
 Raw ideas not yet promoted to GitHub Issues.
 
 ## Inbox
-```
-
-Create `.backlog/issues.md` with:
-
-```markdown
-<!-- GENERATED FROM GITHUB ISSUES. DO NOT EDIT DIRECTLY. -->
-
-# GitHub Issues
-
-Regenerate this file from GitHub Issues when sync tooling exists.
 ```
 
 Create `.backlog/memory.md` with:
@@ -142,16 +130,9 @@ work. Do this every time unless the user explicitly asked to skip dedupe.
 ### Local checks
 
 1. Read `.backlog/inbox.md` and scan titles, types, and short descriptions.
-2. Read `.backlog/issues.md`. If missing, stale, or the project uses GitHub
-   sync, regenerate it first:
-
-   ```bash
-   node scripts/backlog-sync.mjs
-   ```
-
-3. List `.backlog/prds/` and `.backlog/plans/` for matching slugs, titles, or
+2. List `.backlog/prds/` and `.backlog/plans/` for matching slugs, titles, or
    scope.
-4. Skim `.backlog/memory.md` for decisions, blockers, or gotchas that already
+3. Skim `.backlog/memory.md` for decisions, blockers, or gotchas that already
    cover the idea.
 
 ### Cloud checks
@@ -168,9 +149,6 @@ gh pr list --state open --search "login redirect" --limit 10
 Use keywords from the proposed title, affected area, error message, file path,
 or user-facing symptom. Search open issues first, then closed issues when the
 bug or feature may already have been filed or finished.
-
-When `gh` is unavailable, rely on a fresh `.backlog/issues.md` snapshot and
-search that file instead.
 
 ### Overlap signals
 
@@ -214,8 +192,6 @@ When the user shares an idea, bug, nitpick, or task:
 5. Choose type and priority from the user's wording and project context.
 6. Keep the item short. Put deeper context in a PRD only when needed.
 
-Do not add manually maintained task lists to `.backlog/issues.md`.
-
 ### Promote
 
 When promoting local work to GitHub Issues:
@@ -231,7 +207,6 @@ When promoting local work to GitHub Issues:
 6. If keeping a pointer file, include only frontmatter and a short note that the
    GitHub Issue is canonical.
 7. Choose labels from the user's wording and project context.
-8. Regenerate `.backlog/issues.md` if the project has sync tooling.
 
 Pointer file example:
 
@@ -411,7 +386,6 @@ Use GitHub Issues as the source of truth for promoted work:
 - GitHub Issue: canonical title, body, status, labels, discussion, assignment,
   and automation.
 - `.backlog/inbox.md`: local ideas not yet promoted.
-- `.backlog/issues.md`: generated metadata snapshot for local visibility.
 - PRD: temporary local drafting buffer before promotion; not a parallel copy
   after promotion.
 - Plan: local implementation sequence when needed; may reference a GitHub Issue.
@@ -419,29 +393,6 @@ Use GitHub Issues as the source of truth for promoted work:
 
 When linking them, include issue URLs in the PRD or plan frontmatter. Prefer
 GitHub closing keywords such as `Closes #123` in pull requests.
-
-When a project wants GitHub sync, use this skill's
-`scripts/backlog-sync.mjs` helper. It requires Node.js and the GitHub CLI, but
-no npm dependencies. Run it from the downstream project root, either directly
-from the installed skill path or copied into the project as
-`scripts/backlog-sync.mjs`.
-
-Default usage:
-
-```bash
-node scripts/backlog-sync.mjs
-```
-
-The helper discovers the GitHub repository from
-`git config --get remote.origin.url`, writes `.backlog/issues.md`, and defaults
-to all issues with a limit of 1000. Override defaults with flags:
-
-```bash
-node scripts/backlog-sync.mjs --repo owner/repo --output .backlog/issues.md --state all --limit 1000
-```
-
-The helper rewrites `.backlog/issues.md`; do not manually edit generated issue
-content.
 
 Avoid two-way sync unless the user explicitly asks for it. It needs stable IDs,
 conflict handling, deletion behavior, label mapping, and rules for edits from
@@ -455,8 +406,7 @@ backlog:
 1. Ask before rewriting it unless the user explicitly requested migration.
 2. Move rough, unpromoted items to `.backlog/inbox.md`.
 3. Move or recreate promoted work as GitHub Issues.
-4. Create or refresh the generated issue mirror at `.backlog/issues.md`.
-5. Stop using `.backlog/backlog.md` once GitHub Issues are canonical.
+4. Stop using `.backlog/backlog.md` once GitHub Issues are canonical.
 
 ## Rules
 
@@ -466,7 +416,6 @@ backlog:
 - Do not require PRDs for small fixes.
 - Do not require plans for obvious one-step changes.
 - Keep inbox entries readable in plain Markdown.
-- Treat `.backlog/issues.md` as generated and read-only.
 - Never let Markdown status override GitHub Issue status.
 - Do not maintain duplicate editable copies of promoted issue content locally
   and in GitHub.
