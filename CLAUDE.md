@@ -24,6 +24,8 @@ README.md
 CHANGELOG.md
 CLAUDE.md
 skills/backlog/SKILL.md
+skills/backlog/scripts/backlog-setup.mjs
+skills/backlog/references/labels.json
 skills/todoist-api/SKILL.md
 skills/todoist-api/references/endpoints.md
 skills/todoist-api/references/api-semantics.md

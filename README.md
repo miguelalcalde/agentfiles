@@ -23,7 +23,6 @@ work:
 ```text
 .backlog/
   inbox.md
-  issues.md
   prds/
   plans/
   memory.md
@@ -44,7 +43,6 @@ Use the backlog skill to plan the auth cleanup task.
 The skill intentionally keeps the workflow lightweight:
 
 - `inbox.md` captures rough ideas that are not yet GitHub Issues.
-- `issues.md` is a generated/read-only mirror of GitHub Issues.
 - `memory.md` keeps durable decisions, conventions, blockers, and gotchas.
 - PRDs are created only when the task needs product-level clarification.
 - Plans are created only when implementation needs sequencing or risk tracking.
@@ -53,11 +51,14 @@ The skill intentionally keeps the workflow lightweight:
 See `CHANGELOG.md` for migration notes when updating projects that already have
 an older `.backlog/` layout.
 
-The skill includes an optional `scripts/backlog-sync.mjs` helper that downstream
-projects can run from the installed skill or copy into their own `scripts/`
-directory. It regenerates `.backlog/issues.md` from GitHub Issues with the
-GitHub CLI, discovering the repo from `git config --get remote.origin.url` by
-default.
+To bootstrap a project idempotently after installing the skill, run:
+
+```bash
+node path/to/skills/backlog/scripts/backlog-setup.mjs
+```
+
+That creates missing `.backlog/` starter files and upserts the canonical GitHub
+labels. Use `--check` to verify an existing repo without making changes.
 
 ## todoist-api
 

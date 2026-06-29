@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added `skills/backlog/scripts/backlog-setup.mjs`, an idempotent project setup
+  helper that creates missing `.backlog/` scaffold files and upserts the
+  canonical GitHub label set from `references/labels.json`.
 - Added dedupe guidance to `backlog`: verify local `.backlog/` artifacts and
   GitHub Issues before adding inbox items, PRDs, plans, or promoted issues;
   includes overlap signals and resolution rules for exact duplicates, related

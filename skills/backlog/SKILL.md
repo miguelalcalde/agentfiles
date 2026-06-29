@@ -75,6 +75,36 @@ Create `.backlog/memory.md` with:
 
 Keep `prds/` and `plans/` empty until they are needed.
 
+## Project Setup
+
+When initializing backlog in a repository, prefer the bundled setup helper over
+hand-rolling labels or starter files:
+
+```bash
+node path/to/skills/backlog/scripts/backlog-setup.mjs
+```
+
+After installing the skill locally, run it from the project root using the
+installed script path. The helper is idempotent:
+
+- Creates missing `.backlog/` folders and starter files only when absent.
+- Upserts the canonical GitHub labels with `gh label create --force`.
+- Never overwrites existing `inbox.md` or `memory.md`.
+- Never deletes legacy labels or legacy `.backlog/` files.
+
+Useful flags:
+
+```bash
+node backlog-setup.mjs --dry-run
+node backlog-setup.mjs --check
+node backlog-setup.mjs --skip-labels
+node backlog-setup.mjs --skip-scaffold
+```
+
+Canonical label names and descriptions live in
+`references/labels.json`. Update that file when the label framework changes,
+then rerun setup so existing repos pick up the new definitions safely.
+
 ## Inbox Item Format
 
 Use compact inbox items:
