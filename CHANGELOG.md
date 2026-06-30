@@ -7,6 +7,8 @@
 - Added `skills/backlog/scripts/backlog-setup.mjs`, an idempotent project setup
   helper that creates missing `.backlog/` scaffold files and upserts the
   canonical GitHub label set from `references/labels.json`.
+- Added `skills/backlog/scripts/backlog-sync.mjs`, an optional helper that
+  regenerates `.backlog/issues.md` from GitHub Issues via `gh issue list`.
 - Added dedupe guidance to `backlog`: verify local `.backlog/` artifacts and
   GitHub Issues before adding inbox items, PRDs, plans, or promoted issues;
   includes overlap signals and resolution rules for exact duplicates, related
@@ -22,7 +24,9 @@
   helpers from references and replaced `implementation.md` with
   `api-semantics.md` (errors, field semantics, pagination, migration).
 - Simplified `backlog` by removing the local GitHub Issues mirror and sync
-  helper; promoted work should be checked in GitHub directly.
+  helper; promoted work should be checked in GitHub directly. The optional
+  `backlog-sync.mjs` helper was restored for projects that want a generated
+  read-only snapshot at `.backlog/issues.md`.
 
 ### Changed
 

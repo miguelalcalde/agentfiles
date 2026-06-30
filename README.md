@@ -60,6 +60,14 @@ node path/to/skills/backlog/scripts/backlog-setup.mjs
 That creates missing `.backlog/` starter files and upserts the canonical GitHub
 labels. Use `--check` to verify an existing repo without making changes.
 
+To regenerate a read-only GitHub Issues snapshot for local visibility:
+
+```bash
+node path/to/skills/backlog/scripts/backlog-sync.mjs
+```
+
+GitHub remains canonical; `.backlog/issues.md` is generated output only.
+
 ## todoist-api
 
 The `todoist-api` skill is a Todoist API v1 reference for agents that need to

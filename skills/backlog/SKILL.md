@@ -101,6 +101,31 @@ node backlog-setup.mjs --skip-labels
 node backlog-setup.mjs --skip-scaffold
 ```
 
+### Optional GitHub Issues mirror
+
+Projects that want local visibility into promoted work can regenerate a
+read-only snapshot at `.backlog/issues.md`:
+
+```bash
+node path/to/skills/backlog/scripts/backlog-sync.mjs
+```
+
+The helper requires Node.js and the GitHub CLI, but no npm dependencies. It
+discovers the repository from `git remote`, fetches issues with `gh issue list`,
+and rewrites `.backlog/issues.md`. GitHub remains canonical; treat the file as
+generated output only.
+
+Useful flags:
+
+```bash
+node backlog-sync.mjs --dry-run
+node backlog-sync.mjs --repo owner/repo --state open --limit 500
+node backlog-sync.mjs --output .backlog/issues.md
+```
+
+Regenerate after promoting work, changing labels, or when agents need a fresh
+local snapshot. Prefer live `gh` queries for dedupe and triage when available.
+
 Canonical label names and descriptions live in
 `references/labels.json`. Update that file when the label framework changes,
 then rerun setup so existing repos pick up the new definitions safely.
@@ -233,10 +258,11 @@ When promoting local work to GitHub Issues:
 3. Verify the GitHub Issue contains the canonical title, body, labels, and
    acceptance criteria.
 4. Remove the inbox item or replace it with the issue URL.
-5. Delete the promoted PRD unless the user explicitly wants a tiny pointer file.
-6. If keeping a pointer file, include only frontmatter and a short note that the
+5. Regenerate `.backlog/issues.md` when the project uses sync tooling.
+6. Delete the promoted PRD unless the user explicitly wants a tiny pointer file.
+7. If keeping a pointer file, include only frontmatter and a short note that the
    GitHub Issue is canonical.
-7. Choose labels from the user's wording and project context.
+8. Choose labels from the user's wording and project context.
 
 Pointer file example:
 
@@ -416,6 +442,8 @@ Use GitHub Issues as the source of truth for promoted work:
 - GitHub Issue: canonical title, body, status, labels, discussion, assignment,
   and automation.
 - `.backlog/inbox.md`: local ideas not yet promoted.
+- `.backlog/issues.md`: optional generated snapshot for local visibility when
+  sync tooling is enabled.
 - PRD: temporary local drafting buffer before promotion; not a parallel copy
   after promotion.
 - Plan: local implementation sequence when needed; may reference a GitHub Issue.
@@ -447,6 +475,8 @@ backlog:
 - Do not require plans for obvious one-step changes.
 - Keep inbox entries readable in plain Markdown.
 - Never let Markdown status override GitHub Issue status.
+- Treat `.backlog/issues.md` as generated and read-only when sync tooling is
+  enabled.
 - Do not maintain duplicate editable copies of promoted issue content locally
   and in GitHub.
 - Preserve human-written memory and decisions.
