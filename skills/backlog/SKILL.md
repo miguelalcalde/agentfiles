@@ -182,6 +182,17 @@ Before adding an inbox item, creating a PRD or plan, or promoting work to
 GitHub Issues, check whether the task already exists or overlaps with tracked
 work. Do this every time unless the user explicitly asked to skip dedupe.
 
+Prefer the deterministic dedupe helper before manually reading many files or
+issues:
+
+```bash
+node scripts/backlog-dedupe.mjs --title "Repair login redirect" --body "Users return to the wrong page after sign-in."
+node scripts/backlog-dedupe.mjs --title "Repair login redirect" --format json
+```
+
+Use the helper output as evidence. The agent still decides whether overlap is
+an exact duplicate, related work, or safe to create separately.
+
 ### Local checks
 
 1. Read `.backlog/inbox.md` and scan titles, types, and short descriptions.
@@ -281,7 +292,8 @@ Use this GitHub label framework:
 
 - `type:feat`, `type:fix`, `type:nit`
 - `priority:high`, `priority:medium`, `priority:low`
-- `status:unknown`, `status:ready`, `status:blocked`
+- `status:unknown`, `status:doing`, `status:ready`, `status:blocked`,
+  `status:duplicate`
 
 Use exactly one `type:*` label:
 
@@ -301,10 +313,68 @@ Use exactly one `status:*` label for promoted open issues:
 
 - `status:unknown`: default promoted state. Needs clarification, research,
   scoping, or acceptance criteria.
+- `status:doing`: work is actively in progress. Set this as the very first
+  step when an agent or user picks up a task, before any code or refinement
+  work. Remove it when the task is paused, blocked, completed, or handed off.
 - `status:ready`: clear enough to implement without unresolved product
   decisions.
 - `status:blocked`: cannot proceed until a decision or dependency is resolved.
   Link the blocking issue or decision in the issue body or a comment.
+- `status:duplicate`: tracks the same outcome as another issue. Always paired
+  with a `Duplicate of #N` comment pointing to the canonical issue, and the
+  issue should be closed. Keep the original `type:*` and `priority:*` labels
+  so history stays searchable.
+
+If any of these labels do not exist in the repository yet, create them with
+`gh label create` (see **Querying GitHub** below) before applying them.
+
+### Review
+
+Run a Review when starting a session, picking up work, or cleansing the
+backlog. The order matters: in-progress work first, then dedupe, then split
+the rest into ready or needs-refinement. See **Querying GitHub** for the exact
+`gh` commands behind each step.
+
+For token efficiency, start with the deterministic helper output:
+
+```bash
+node scripts/backlog-status.mjs
+node scripts/backlog-refinement-candidates.mjs
+node scripts/backlog-refinement-candidates.mjs --format json
+```
+
+Only fetch full issue bodies for issues you are actively refining or auditing.
+For one issue, use:
+
+```bash
+node scripts/backlog-issue-audit.mjs 123
+node scripts/backlog-issue-audit.mjs 123 --format json
+```
+
+1. **Check items already in progress.** Before doing anything else, list open
+   issues with `status:doing`. If a task is already in progress, resume or
+   unblock it before starting new work. When an agent or user picks up a fresh
+   task, the very first action is to apply `status:doing` to its issue so other
+   agents and collaborators can see the work is taken.
+2. **Cleanse duplicates.** Scan open issues for overlapping titles, slugs,
+   subsystems, symptoms, or file paths. When two issues track the same
+   outcome, keep the canonical one and on the other: apply `status:duplicate`,
+   comment `Duplicate of #N` pointing at the canonical issue, then close it.
+   Use the **Overlap signals** rules above to judge close-but-not-identical
+   cases.
+3. **Sort the remaining open issues into ready or needs-refinement.**
+   - `status:ready`: scope, behavior, and acceptance criteria are clear; no
+     unresolved product decisions. Eligible for Triage and execution.
+   - `status:unknown`: needs a refinement pass. Either resolve it now (clarify
+     scope, add acceptance criteria, attach a PRD via **Refine**) and relabel
+     `status:ready`, or leave it tagged `status:unknown` for a dedicated
+     refinement pass.
+   - `status:blocked`: confirm the blocker is still real. If it has been
+     resolved, relabel; if not, ensure the blocker is linked in a comment so
+     future agents can see what they are waiting on.
+
+Review does not pick what to work on next; that is **Triage**. Review only
+ensures the backlog reflects reality before any decision is made.
 
 ### Triage
 
@@ -451,6 +521,114 @@ Use GitHub Issues as the source of truth for promoted work:
 
 When linking them, include issue URLs in the PRD or plan frontmatter. Prefer
 GitHub closing keywords such as `Closes #123` in pull requests.
+
+### Querying GitHub
+
+Use the `gh` CLI for live reads and writes. These are the canonical commands
+the Review, Verify, Promote, and Triage steps rely on. Run them from inside
+the project's git repository so `gh` auto-detects the owner/repo; otherwise
+pass `--repo owner/repo`.
+
+Prefer this skill's scripts for repeated deterministic reads:
+
+```bash
+node scripts/backlog-status.mjs
+node scripts/backlog-refinement-candidates.mjs
+node scripts/backlog-issue-audit.mjs 123
+node scripts/backlog-dedupe.mjs --title "Repair login redirect"
+node scripts/backlog-sync.mjs
+```
+
+Use `--format json` when another agent will consume the result. Use Markdown
+when reporting to a human. Fall back to raw `gh` commands when a helper does
+not cover the exact query or mutation needed.
+
+**Create the labels this skill expects (one-time, idempotent fails are fine):**
+
+```bash
+gh label create "type:feat"          --color "1D76DB" --description "New behavior or capability"
+gh label create "type:fix"           --color "D73A4A" --description "Broken or incorrect behavior"
+gh label create "type:nit"           --color "C2E0C6" --description "Polish, copy, cleanup, tiny UX"
+gh label create "priority:high"      --color "B60205" --description "Important soon or blocking"
+gh label create "priority:medium"    --color "FBCA04" --description "Valuable but not urgent"
+gh label create "priority:low"       --color "0E8A16" --description "Nice-to-have, opportunistic"
+gh label create "status:unknown"     --color "D4C5F9" --description "Needs scoping or acceptance criteria"
+gh label create "status:doing"       --color "FBCA04" --description "Work actively in progress"
+gh label create "status:ready"       --color "0E8A16" --description "Clear enough to implement"
+gh label create "status:blocked"     --color "5319E7" --description "Waiting on a decision or dependency"
+gh label create "status:duplicate"   --color "CFD3D7" --description "Tracks the same outcome as another issue"
+```
+
+**Review step 1 — what is already in progress:**
+
+```bash
+gh issue list --state open --label "status:doing" --limit 50
+```
+
+**Review step 2 — search for potential duplicates (use keywords from title,
+symptom, file path, or affected subsystem):**
+
+```bash
+gh issue list --state all --search "<keywords>" --limit 20
+gh issue list --state all --search "<keywords> in:title,body" --limit 20
+gh issue view 123
+```
+
+Mark and close a duplicate against the canonical issue:
+
+```bash
+gh issue edit 123 --add-label "status:duplicate" --remove-label "status:unknown,status:ready,status:doing,status:blocked"
+gh issue comment 123 --body "Duplicate of #456"
+gh issue close 123 --reason "not planned"
+```
+
+**Review step 3 — ready vs needs-refinement queues:**
+
+```bash
+gh issue list --state open --label "status:ready"   --limit 50
+gh issue list --state open --label "status:unknown" --limit 50
+gh issue list --state open --label "status:blocked" --limit 50
+```
+
+Filter the ready queue by priority for Triage:
+
+```bash
+gh issue list --state open --label "status:ready,priority:high"   --limit 50
+gh issue list --state open --label "status:ready,priority:medium" --limit 50
+```
+
+**Pick up a task (set `status:doing` as the first action):**
+
+```bash
+gh issue edit 123 --remove-label "status:ready,status:unknown" --add-label "status:doing"
+```
+
+**Hand off, finish, or pause a task:**
+
+```bash
+gh issue edit 123 --remove-label "status:doing" --add-label "status:blocked"
+gh issue edit 123 --remove-label "status:doing" --add-label "status:ready"
+gh issue close 123
+```
+
+**Promote an inbox item to a new issue:**
+
+```bash
+gh issue create \
+  --title "Repair login redirect" \
+  --body  "Users return to the wrong page after sign-in." \
+  --label "type:fix,priority:high,status:unknown"
+```
+
+**Useful JSON output for scripting or generating `.backlog/issues.md`:**
+
+```bash
+gh issue list --state open --json number,title,labels,updatedAt,url --limit 100
+gh issue view 123 --json number,title,body,labels,state,comments
+```
+
+If `gh` is not available, fall back to a freshly regenerated
+`.backlog/issues.md` snapshot and search that file instead.
 
 Avoid two-way sync unless the user explicitly asks for it. It needs stable IDs,
 conflict handling, deletion behavior, label mapping, and rules for edits from
