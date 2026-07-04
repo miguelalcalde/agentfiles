@@ -17,6 +17,9 @@
   integrations. It documents authentication, endpoint paths, request fields,
   pagination, error handling, and migration caveats without encoding personal
   task-management workflow rules.
+- Added `sdlc-first-principles`, a workflow skill that applies Elon Musk's
+  five-step process improvement algorithm to SDLC requirements, planning, code
+  review, CI/CD, release, incident, testing, and automation processes.
 
 ### Changed
 

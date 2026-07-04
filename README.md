@@ -14,6 +14,12 @@ Install the Todoist API skill with:
 npx skills add mikemajara/skills --skill todoist-api
 ```
 
+Install the SDLC first-principles skill with:
+
+```bash
+npx skills add mikemajara/skills --skill sdlc-first-principles
+```
+
 ## backlog
 
 The skill gives an LLM a simple project workflow for bootstrapping and using a
@@ -74,3 +80,14 @@ The `todoist-api` skill is a Todoist API v1 reference for agents that need to
 build or operate direct Todoist HTTP integrations. It covers authentication,
 endpoint paths, request fields, pagination, error handling, and migration
 caveats without encoding personal task-management workflow rules.
+
+## sdlc-first-principles
+
+The `sdlc-first-principles` skill applies Elon Musk's five-step process
+improvement algorithm to software delivery: challenge requirements, delete
+unnecessary work, simplify what remains, accelerate cycle time, and automate
+last.
+
+Use it to review requirements, tickets, planning rituals, code review, CI/CD,
+release processes, tests, incident response, developer tooling, automation, or
+team operating procedures.
