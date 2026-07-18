@@ -14,10 +14,10 @@ Install the Todoist API skill with:
 npx skills add mikemajara/skills --skill todoist-api
 ```
 
-Install the SDLC first-principles skill with:
+Install the commit-message skill with:
 
 ```bash
-npx skills add mikemajara/skills --skill sdlc-first-principles
+npx skills add mikemajara/skills --skill commit
 ```
 
 ## backlog
