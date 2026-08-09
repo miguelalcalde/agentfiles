@@ -26,6 +26,7 @@ CLAUDE.md
 skills/backlog/SKILL.md
 skills/backlog/assets/inbox.md
 skills/backlog/assets/memory.md
+skills/backlog/assets/agent-hint.md
 skills/backlog/references/labels.json
 skills/backlog/scripts/backlog-setup.mjs
 skills/backlog/scripts/backlog-sync.mjs

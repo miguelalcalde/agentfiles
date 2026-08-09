@@ -6,6 +6,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +15,9 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SKILL_ROOT = resolve(SCRIPT_DIR, "..");
 const DEFAULT_BACKLOG_DIR = ".backlog";
 const DEFAULT_REMOTE = "origin";
+const AGENT_HINT_START = "<!-- backlog-skill:agent-hint:start -->";
+const AGENT_HINT_END = "<!-- backlog-skill:agent-hint:end -->";
+const AGENT_HINT_TARGETS = ["AGENTS.md", "CLAUDE.md"];
 
 const options = parseArgs(process.argv.slice(2));
 
@@ -26,9 +30,17 @@ const backlogDir = resolve(options.backlogDir || DEFAULT_BACKLOG_DIR);
 const remote = options.remote || DEFAULT_REMOTE;
 const repo = options.repo || getRepoFromGitRemote(remote);
 const labels = loadLabels();
+const agentHint = loadAgentHint();
 
 if (options.check) {
-  const problems = runCheck({ backlogDir, repo, labels, remote });
+  const problems = runCheck({
+    backlogDir,
+    repo,
+    labels,
+    remote,
+    skipAgentHint: options.skipAgentHint,
+    agentHint,
+  });
   if (problems.length === 0) {
     console.log("Backlog setup looks good.");
     process.exit(0);
@@ -43,6 +55,10 @@ if (options.check) {
 
 if (!options.skipScaffold) {
   ensureScaffold(backlogDir, options.dryRun);
+}
+
+if (!options.skipAgentHint) {
+  ensureAgentHint(agentHint, options.dryRun);
 }
 
 if (!options.skipLabels) {
@@ -67,6 +83,7 @@ function parseArgs(argv) {
     dryRun: false,
     skipLabels: false,
     skipScaffold: false,
+    skipAgentHint: false,
     backlogDir: "",
     repo: "",
     remote: "",
@@ -91,6 +108,9 @@ function parseArgs(argv) {
         break;
       case "--skip-scaffold":
         options.skipScaffold = true;
+        break;
+      case "--skip-agent-hint":
+        options.skipAgentHint = true;
         break;
       case "--backlog-dir":
         options.backlogDir = argv[index + 1] || "";
@@ -120,10 +140,11 @@ function printHelp() {
 Idempotently prepare a project for the backlog workflow.
 
 Options:
-  --check              Report missing scaffold or labels; exit 1 if incomplete
+  --check              Report missing scaffold, agent hint, or labels; exit 1 if incomplete
   --dry-run            Print actions without writing files or updating labels
-  --skip-scaffold      Only upsert GitHub labels
-  --skip-labels        Only create missing local .backlog/ files and folders
+  --skip-scaffold      Skip creating missing local .backlog/ files and folders
+  --skip-agent-hint    Skip injecting the agent hint into AGENTS.md / CLAUDE.md
+  --skip-labels        Skip upserting GitHub labels
   --backlog-dir PATH   Backlog directory (default: .backlog)
   --repo OWNER/REPO    GitHub repository for labels (default: from git remote)
   --remote NAME        Git remote to inspect (default: origin)
@@ -134,6 +155,7 @@ Examples:
   node backlog-setup.mjs --dry-run
   node backlog-setup.mjs --check
   node backlog-setup.mjs --skip-labels
+  node backlog-setup.mjs --skip-agent-hint
 `);
 }
 
@@ -142,13 +164,23 @@ function loadLabels() {
   return JSON.parse(readFileSync(labelsPath, "utf8"));
 }
 
-function runCheck({ backlogDir, repo, labels, remote }) {
+function loadAgentHint() {
+  return readFileSync(join(SKILL_ROOT, "assets", "agent-hint.md"), "utf8")
+    .trimEnd()
+    .concat("\n");
+}
+
+function runCheck({ backlogDir, repo, labels, remote, skipAgentHint, agentHint }) {
   const problems = [];
 
   for (const relativePath of requiredScaffoldPaths(backlogDir)) {
     if (!existsSync(relativePath)) {
       problems.push(`Missing ${toProjectRelative(relativePath)}`);
     }
+  }
+
+  if (!skipAgentHint) {
+    problems.push(...checkAgentHint(agentHint));
   }
 
   if (!repo) {
@@ -168,6 +200,32 @@ function runCheck({ backlogDir, repo, labels, remote }) {
     }
   } catch (error) {
     problems.push(error.message);
+  }
+
+  return problems;
+}
+
+function checkAgentHint(agentHint) {
+  const problems = [];
+  const existingTargets = AGENT_HINT_TARGETS.filter((path) => existsSync(path));
+
+  if (existingTargets.length === 0) {
+    problems.push(
+      `Missing agent hint (expected in ${AGENT_HINT_TARGETS.join(" or ")})`,
+    );
+    return problems;
+  }
+
+  for (const path of existingTargets) {
+    const content = readFileSync(path, "utf8");
+    if (!content.includes(AGENT_HINT_START) || !content.includes(AGENT_HINT_END)) {
+      problems.push(`Missing agent hint markers in ${path}`);
+      continue;
+    }
+
+    if (extractAgentHint(content) !== normalizeHint(agentHint)) {
+      problems.push(`Stale agent hint in ${path}`);
+    }
   }
 
   return problems;
@@ -197,6 +255,99 @@ function ensureScaffold(backlogDir, dryRun) {
     join(SKILL_ROOT, "assets", "memory.md"),
     join(backlogDir, "memory.md"),
     dryRun,
+  );
+}
+
+function ensureAgentHint(agentHint, dryRun) {
+  const existingTargets = AGENT_HINT_TARGETS.filter((path) => existsSync(path));
+  const targets =
+    existingTargets.length > 0 ? existingTargets : [AGENT_HINT_TARGETS[0]];
+
+  for (const path of targets) {
+    upsertAgentHint(path, agentHint, dryRun);
+  }
+}
+
+function upsertAgentHint(path, agentHint, dryRun) {
+  const hint = normalizeHint(agentHint);
+  const exists = existsSync(path);
+
+  if (!exists) {
+    const created = `# Agent Instructions\n\n${hint}`;
+    if (dryRun) {
+      console.log(`[dry-run] would create file ${path} with agent hint`);
+      return;
+    }
+
+    writeFileSync(path, created);
+    console.log(`Created file ${path} with agent hint`);
+    return;
+  }
+
+  const content = readFileSync(path, "utf8");
+  const hasStart = content.includes(AGENT_HINT_START);
+  const hasEnd = content.includes(AGENT_HINT_END);
+
+  if (hasStart && hasEnd) {
+    const current = extractAgentHint(content);
+    if (current === hint) {
+      return;
+    }
+
+    const next = replaceAgentHint(content, hint);
+    if (dryRun) {
+      console.log(`[dry-run] would update agent hint in ${path}`);
+      return;
+    }
+
+    writeFileSync(path, next);
+    console.log(`Updated agent hint in ${path}`);
+    return;
+  }
+
+  if (hasStart || hasEnd) {
+    console.error(
+      `Refusing to modify ${path}: found a partial backlog agent-hint marker.`,
+    );
+    process.exit(1);
+  }
+
+  const trimmed = content.trimEnd();
+  const next = trimmed.length === 0 ? hint : `${trimmed}\n\n${hint}`;
+  if (dryRun) {
+    console.log(`[dry-run] would append agent hint to ${path}`);
+    return;
+  }
+
+  writeFileSync(path, next);
+  console.log(`Appended agent hint to ${path}`);
+}
+
+function normalizeHint(hint) {
+  return `${hint.trim()}\n`;
+}
+
+function extractAgentHint(content) {
+  const start = content.indexOf(AGENT_HINT_START);
+  const end = content.indexOf(AGENT_HINT_END);
+  if (start === -1 || end === -1 || end < start) {
+    return "";
+  }
+
+  return normalizeHint(content.slice(start, end + AGENT_HINT_END.length));
+}
+
+function replaceAgentHint(content, hint) {
+  const start = content.indexOf(AGENT_HINT_START);
+  const end = content.indexOf(AGENT_HINT_END);
+  if (start === -1 || end === -1 || end < start) {
+    return content;
+  }
+
+  return (
+    content.slice(0, start) +
+    hint +
+    content.slice(end + AGENT_HINT_END.length).replace(/^\n/, "")
   );
 }
 

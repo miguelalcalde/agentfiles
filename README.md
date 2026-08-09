@@ -44,8 +44,11 @@ The skill intentionally keeps the workflow lightweight:
 
 - `inbox.md` captures rough ideas that are not yet GitHub Issues.
 - `memory.md` keeps durable decisions, conventions, blockers, and gotchas.
-- PRDs are created only when the task needs product-level clarification.
-- Plans are created only when implementation needs sequencing or risk tracking.
+- GitHub Issues are shaped implementable units (goal, scope, AC)—one issue ≈ one
+  coherent first PR.
+- PRDs are product umbrellas for multi-issue drafting; promote by creating
+  linked issues, not by pasting the PRD into an issue body.
+- Plans are per-issue sequencing (how/order), not tickets or second product docs.
 - Small fixes and nitpicks can stay in the inbox until they are worth promoting.
 
 See `CHANGELOG.md` for migration notes when updating projects that already have
@@ -57,8 +60,11 @@ To bootstrap a project idempotently after installing the skill, run:
 node path/to/skills/backlog/scripts/backlog-setup.mjs
 ```
 
-That creates missing `.backlog/` starter files and upserts the canonical GitHub
-labels. Use `--check` to verify an existing repo without making changes.
+That creates missing `.backlog/` starter files, injects an agent hint into
+`AGENTS.md` / `CLAUDE.md` so agents always check `.backlog/memory.md` and the
+inbox, and upserts the canonical GitHub labels. Use `--check` to verify an
+existing repo without making changes. Use `--skip-agent-hint` to leave agent
+instruction files untouched.
 
 To regenerate a read-only GitHub Issues snapshot for local visibility:
 

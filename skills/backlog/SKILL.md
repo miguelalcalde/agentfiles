@@ -3,9 +3,10 @@ name: backlog
 description: |
   Lightweight project backlog workflow. Use when starting a project, creating or
   maintaining a `.backlog/` folder, capturing inbox ideas, promoting work to
-  GitHub Issues, checking for duplicate or overlapping tasks before add or
-  promote, refining work into PRDs, planning implementation, or keeping project
-  task memory current without a larger agent framework.
+  shaped GitHub Issues (not PRD or plan body dumps), checking for duplicate or
+  overlapping tasks before add or promote, drafting multi-issue PRDs, planning
+  implementation for a single issue, or keeping project task memory current
+  without a larger agent framework.
 ---
 
 # Backlog
@@ -33,19 +34,31 @@ Use these roles:
 
 - `.backlog/inbox.md`: raw ideas, bugs, chores, and nitpicks not yet promoted
   to GitHub Issues.
-- `.backlog/prds/PRD-[slug].md`: temporary drafting artifact for large or
-  ambiguous work before it is promoted to GitHub. After promotion, delete it or
-  replace it with a tiny pointer only if the user wants local traceability.
-- `.backlog/plans/PLAN-[slug].md`: implementation sequencing for non-trivial
-  changes.
+- `.backlog/prds/PRD-[slug].md`: product umbrella for large or ambiguous work
+  that may span multiple issues. Drafting only—not a GitHub Issue and not
+  something to paste into an issue body.
+- `.backlog/plans/PLAN-[slug].md`: local how/order for one issue (or a small
+  linked set). Execution sequencing—not a second product doc.
 - `.backlog/memory.md`: durable decisions, conventions, blockers, gotchas, and
   context future agents should remember.
+
+## Artifact roles
+
+Keep one role per artifact. Do not merge a PRD, a plan, and an issue into one
+file or one GitHub Issue body.
+
+| Artifact | Role | Promote? |
+| --- | --- | --- |
+| **GitHub Issue** | Implementable unit: goal, scope, acceptance criteria, status. One issue ≈ one coherent first PR. | Canonical for executable work |
+| **PRD** | Product umbrella / multi-issue drafting. Links out to shaped issues. | **No.** Promote means create shaped issue(s) from the PRD; PRD stays umbrella or becomes a pointer |
+| **PLAN** | Sequencing and verification for a single issue (or tight linked set). | **No.** Link the plan from the issue; do not open an issue from a plan |
+| **Inbox** | Rough capture | Promote → shaped issue(s), not a PRD dump |
 
 GitHub Issues are canonical for any promoted task. If an item has a GitHub
 Issue, GitHub owns its title, body, status, labels, discussion, and assignment.
 Do not keep a second editable copy of the same promoted artifact in `.backlog/`.
-Local PRDs are drafting buffers before promotion; local plans are execution
-notes when implementation needs sequencing.
+Never paste a full PRD or umbrella roadmap PLAN into an issue body—link and
+summarize only what that issue owns.
 
 ## Bootstrap Content
 
@@ -75,6 +88,11 @@ Create `.backlog/memory.md` with:
 
 Keep `prds/` and `plans/` empty until they are needed.
 
+Also ensure project agent instructions point at the backlog. Prefer
+`backlog-setup.mjs` (below). If bootstrapping by hand, append the marked hint
+from `assets/agent-hint.md` to existing `AGENTS.md` and/or `CLAUDE.md`, or
+create `AGENTS.md` with that hint when neither file exists.
+
 ## Project Setup
 
 When initializing backlog in a repository, prefer the bundled setup helper over
@@ -88,9 +106,14 @@ After installing the skill locally, run it from the project root using the
 installed script path. The helper is idempotent:
 
 - Creates missing `.backlog/` folders and starter files only when absent.
+- Injects a marked agent hint into existing `AGENTS.md` and/or `CLAUDE.md`
+  (creates `AGENTS.md` when neither exists) so agents read
+  `.backlog/memory.md` and check the inbox before starting work.
 - Upserts the canonical GitHub labels with `gh label create --force`.
 - Never overwrites existing `inbox.md` or `memory.md`.
 - Never deletes legacy labels or legacy `.backlog/` files.
+- Updates a previously injected agent hint in place when the skill's wording
+  changes; leaves surrounding file content alone.
 
 Useful flags:
 
@@ -99,6 +122,7 @@ node backlog-setup.mjs --dry-run
 node backlog-setup.mjs --check
 node backlog-setup.mjs --skip-labels
 node backlog-setup.mjs --skip-scaffold
+node backlog-setup.mjs --skip-agent-hint
 ```
 
 ### Optional GitHub Issues mirror
@@ -179,8 +203,13 @@ Examples:
 ## Verify Before Add or Promote
 
 Before adding an inbox item, creating a PRD or plan, or promoting work to
-GitHub Issues, check whether the task already exists or overlaps with tracked
-work. Do this every time unless the user explicitly asked to skip dedupe.
+GitHub Issues:
+
+1. **Classify** what you are holding: inbox capture, PRD (umbrella), PLAN
+   (sequencing for an issue), or issue-shaped work. Pick the smallest artifact
+   that fits. Do not fold all three into one.
+2. Check whether the task already exists or overlaps with tracked work. Do this
+   every time unless the user explicitly asked to skip dedupe.
 
 Prefer the deterministic dedupe helper before manually reading many files or
 issues:
@@ -256,23 +285,33 @@ When the user shares an idea, bug, nitpick, or task:
 4. If the item is ready to track, create or update a GitHub Issue when the user
    wants GitHub-backed tracking.
 5. Choose type and priority from the user's wording and project context.
-6. Keep the item short. Put deeper context in a PRD only when needed.
+6. Keep the item short. If product scope is large or multi-issue, use a PRD via
+   **Refine**—not a long inbox line or a future issue body dump.
 
 ### Promote
+
+**Promote** means create or update **shaped GitHub Issue(s)**—not copy a PRD or
+PLAN into an issue body.
 
 When promoting local work to GitHub Issues:
 
 1. Run **Verify Before Add or Promote** again, focusing on GitHub Issues and
    any open PRs for the same area.
-2. If the work has a PRD, create or update the GitHub Issue from the PRD
-   content.
-3. Verify the GitHub Issue contains the canonical title, body, labels, and
-   acceptance criteria.
-4. Remove the inbox item or replace it with the issue URL.
-5. Regenerate `.backlog/issues.md` when the project uses sync tooling.
-6. Delete the promoted PRD unless the user explicitly wants a tiny pointer file.
-7. If keeping a pointer file, include only frontmatter and a short note that the
-   GitHub Issue is canonical.
+2. **Classify the source:** inbox item → usually one issue; PRD → one or more
+   issues (split by implementable units); PLAN → do not promote the plan—ensure
+   the linked issue exists and the plan stays local.
+3. **Shape each issue** as an implementable unit: concise title, goal, scope,
+   acceptance criteria, and labels. Size the body for one coherent first PR.
+   Pull only what that issue owns from inbox text or PRD sections—never paste
+   the full PRD, plan checklist, or umbrella roadmap.
+4. **If the source is a PRD:** create or update the shaped issue(s); add issue
+   URLs under `## Linked Issues` in the PRD (and in PRD frontmatter when
+   useful). Then delete the PRD or replace it with a tiny pointer file. The PRD
+   does not become the issue body.
+5. Verify each GitHub Issue has canonical title, body, labels, and acceptance
+   criteria.
+6. Remove the inbox item or replace it with the issue URL.
+7. Regenerate `.backlog/issues.md` when the project uses sync tooling.
 8. Choose labels from the user's wording and project context.
 
 Pointer file example:
@@ -366,9 +405,11 @@ node scripts/backlog-issue-audit.mjs 123 --format json
    - `status:ready`: scope, behavior, and acceptance criteria are clear; no
      unresolved product decisions. Eligible for Triage and execution.
    - `status:unknown`: needs a refinement pass. Either resolve it now (clarify
-     scope, add acceptance criteria, attach a PRD via **Refine**) and relabel
-     `status:ready`, or leave it tagged `status:unknown` for a dedicated
-     refinement pass.
+     scope and acceptance criteria **in the issue** when one issue suffices, or
+     draft a **PRD** via **Refine** only for multi-issue or ambiguous product
+     scope—then promote shaped issues from the PRD without body dumps) and
+     relabel `status:ready`, or leave it tagged `status:unknown` for a
+     dedicated refinement pass.
    - `status:blocked`: confirm the blocker is still real. If it has been
      resolved, relabel; if not, ensure the blocker is linked in a comment so
      future agents can see what they are waiting on.
@@ -389,15 +430,19 @@ When choosing what to work on:
 
 ### Refine
 
-Create a PRD only when the task benefits from product-level clarification.
-First run **Verify Before Add or Promote** so the PRD does not duplicate an
-existing issue, inbox item, or plan.
+**Refine** clarifies product scope. Output is either a **shaped issue** (single
+implementable unit) or a **PRD** (umbrella)—not both merged into one artifact.
 
-- user-facing feature
-- ambiguous behavior
-- multiple acceptance criteria
-- meaningful scope or tradeoffs
-- work likely to be resumed later
+Create a PRD only when the work benefits from product-level clarification and
+may need **multiple** shaped issues. First run **Verify Before Add or Promote**
+so the PRD does not duplicate an existing issue, inbox item, or plan.
+
+- user-facing feature with ambiguous behavior or tradeoffs
+- meaningful scope that will split across several PRs
+- work likely to be resumed later and needs a stable umbrella
+
+If the work fits one issue, refine **in the GitHub Issue** (goal, scope,
+acceptance criteria) and skip the PRD.
 
 Skip the PRD for obvious fixes, small chores, and nitpicks.
 
@@ -432,25 +477,40 @@ created_at: [ISO-8601 timestamp]
 
 ## Out of Scope
 
+## Linked Issues
+
+<!-- Add GitHub issue URLs when shaped units exist. Executable work lives here, not in this PRD body. -->
+
 ## Open Questions
 ```
+
+When the PRD is ready, use **Promote** to create shaped issue(s). Update
+`## Linked Issues` and frontmatter `issue` fields to point at them. Do not
+promote by copying this file into an issue body.
 
 Use statuses:
 
 - `draft`: useful but still being shaped
-- `ready`: clear enough to plan or implement
+- `ready`: clear enough to split into shaped issues or plan
 - `blocked`: needs a human decision or external dependency
 - `done`: implemented or no longer needed
 
 ### Plan
 
-Create a plan only when implementation needs sequencing. First run **Verify
-Before Add or Promote** so the plan does not duplicate existing tracked work.
+Create a plan only when **a specific issue** (or small linked set) needs
+implementation sequencing. First run **Verify Before Add or Promote** so the plan
+does not duplicate existing tracked work.
 
-- multiple files or subsystems
+Plans are local how/order—not product requirements and not GitHub Issues. If a
+document reads like a multi-milestone roadmap, keep it as reference only: add at
+the top `> Reference only — executable work lives in linked issues.` and list
+those issues. Do not treat umbrella plans as tickets or paste them into issue
+bodies.
+
+- multiple files or subsystems for **one** issue's outcome
 - migration, data, auth, payments, security, or deployment risk
 - uncertain tests or verification steps
-- work that an agent should execute later
+- work that an agent should execute later against a linked issue
 
 Plan path:
 
@@ -470,6 +530,8 @@ created_at: [ISO-8601 timestamp]
 ---
 
 # Plan: [Title]
+
+> Reference only — executable work lives in linked issues.
 
 ## Summary
 
@@ -509,17 +571,19 @@ Do not create PRDs or plans retroactively unless they would help future work.
 
 Use GitHub Issues as the source of truth for promoted work:
 
-- GitHub Issue: canonical title, body, status, labels, discussion, assignment,
-  and automation.
+- GitHub Issue: implementable unit—goal, scope, acceptance criteria, status,
+  labels, discussion, assignment, and automation. Not a PRD or plan container.
 - `.backlog/inbox.md`: local ideas not yet promoted.
 - `.backlog/issues.md`: optional generated snapshot for local visibility when
   sync tooling is enabled.
-- PRD: temporary local drafting buffer before promotion; not a parallel copy
-  after promotion.
-- Plan: local implementation sequence when needed; may reference a GitHub Issue.
+- PRD: product umbrella and multi-issue drafting; links to shaped issues. Not
+  promoted by pasting into an issue body.
+- Plan: local sequencing for a linked issue; not a ticket. Umbrella roadmaps
+  are reference-only with explicit linked issues.
 - Pull request: code review and final execution record.
 
-When linking them, include issue URLs in the PRD or plan frontmatter. Prefer
+When linking them, include issue URLs in PRD `## Linked Issues`, plan
+frontmatter, and PRD frontmatter when a single primary issue exists. Prefer
 GitHub closing keywords such as `Closes #123` in pull requests.
 
 ### Querying GitHub
@@ -647,8 +711,11 @@ backlog:
 ## Rules
 
 - Prefer the smallest useful artifact.
+- One role per artifact: issue, PRD, or plan—do not merge them.
+- Promote means shaped GitHub Issue(s), never a PRD or plan body dump.
 - Verify local and cloud trackers for duplicates and overlap before adding or
   promoting work.
+- Classify inbox vs PRD vs plan vs issue before Refine, Plan, or Promote.
 - Do not require PRDs for small fixes.
 - Do not require plans for obvious one-step changes.
 - Keep inbox entries readable in plain Markdown.

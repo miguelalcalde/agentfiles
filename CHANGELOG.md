@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+- `backlog-setup.mjs` now injects a marked agent hint into `AGENTS.md` and/or
+  `CLAUDE.md` (creating `AGENTS.md` when neither exists) so agents read
+  `.backlog/memory.md` and check the inbox before starting work. Use
+  `--skip-agent-hint` to opt out; `--check` verifies the hint is present and
+  current.
+
+### Changed
+
+- Clarified `backlog` artifact roles: GitHub Issues are implementable units;
+  PRDs are product umbrellas that link to shaped issues (not issue body dumps);
+  plans are per-issue sequencing with an explicit reference-only rule for
+  umbrella roadmaps. Promote and Refine flows now require classifying artifact
+  type before creating or updating work.
+
 ### Removed
 
 - Removed `todoist-api` as out of scope for this repository.
