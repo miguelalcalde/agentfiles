@@ -8,6 +8,9 @@ Expected install commands:
 
 ```bash
 npx skills add mikemajara/skills --skill backlog
+npx skills add mikemajara/skills --skill backlog-research
+npx skills add mikemajara/skills --skill backlog-refine
+npx skills add mikemajara/skills --skill backlog-plan
 npx skills add mikemajara/skills --skill todoist-api
 ```
 
@@ -24,17 +27,21 @@ README.md
 CHANGELOG.md
 CLAUDE.md
 skills/backlog/SKILL.md
-skills/backlog/scripts/backlog-setup.mjs
-skills/backlog/scripts/backlog-sync.mjs
+skills/backlog/scripts/
 skills/backlog/references/labels.json
+skills/backlog/references/phase-skills.md
+skills/backlog-research/SKILL.md
+skills/backlog-refine/SKILL.md
+skills/backlog-plan/SKILL.md
 skills/todoist-api/SKILL.md
 skills/todoist-api/references/endpoints.md
 skills/todoist-api/references/api-semantics.md
 ```
 
-The `backlog` skill is intentionally self-contained. It teaches an LLM how to
-bootstrap and maintain a lightweight `.backlog/` folder inside whichever project
-is using the skill.
+The `backlog` skill is the shared **contract**: bootstrap and maintain a
+lightweight `.backlog/` folder, labels, verify/dedupe, Review/Triage, and
+scripts. Phase skills (`backlog-research`, `backlog-refine`, `backlog-plan`) are
+thin playbooks for multi-agent runs; they must not redefine shared law.
 
 Default structure created by the skill:
 
@@ -49,9 +56,13 @@ Default structure created by the skill:
 ## Design Decisions
 
 - Skill name must remain `backlog`.
+- Phase skill names must remain `backlog-research`, `backlog-refine`, and
+  `backlog-plan`.
 - Todoist API skill name must remain `todoist-api`.
-- Prefer one self-contained `SKILL.md`; keep helper scripts optional, small,
-  dependency-free, and directly tied to the `backlog` workflow.
+- Prefer one self-contained contract `SKILL.md` plus thin phase skills; keep
+  helper scripts optional, small, dependency-free, and owned by `backlog`.
+- Phase skills encode phase judgment, inputs/outputs, and stop conditions;
+  point back to `backlog` for structure, labels, and dedupe.
 - Keep `todoist-api` as API mechanics/reference only. Task workflow,
   project defaults, date defaults, and user preferences belong in the consuming
   agent's instructions, not in the skill.
@@ -63,6 +74,8 @@ Default structure created by the skill:
 - Plans are created only when implementation needs sequencing, risk tracking, or
   future agent execution.
 - Small fixes, chores, and nitpicks can stay as compact inbox items.
+- Hook-driven phase spawning is deferred; document handoffs in
+  `skills/backlog/references/phase-skills.md` until automation is intentional.
 
 ## Cleanup History
 

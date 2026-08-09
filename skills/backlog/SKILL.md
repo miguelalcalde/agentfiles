@@ -1,11 +1,13 @@
 ---
 name: backlog
 description: |
-  Lightweight project backlog workflow. Use when starting a project, creating or
-  maintaining a `.backlog/` folder, capturing inbox ideas, promoting work to
-  GitHub Issues, checking for duplicate or overlapping tasks before add or
-  promote, refining work into PRDs, planning implementation, or keeping project
-  task memory current without a larger agent framework.
+  Lightweight project backlog workflow and shared contract for phase skills.
+  Use when starting a project, creating or maintaining a `.backlog/` folder,
+  capturing inbox ideas, promoting work to GitHub Issues, reviewing or triaging
+  the queue, checking for duplicate or overlapping tasks, or keeping project
+  task memory current. For dedicated research, refine/PRD, or plan passes in
+  multi-agent workflows, prefer backlog-research, backlog-refine, or
+  backlog-plan alongside this skill.
 ---
 
 # Backlog
@@ -14,6 +16,12 @@ Use this skill to manage lightweight project memory in `.backlog/`.
 
 The goal is useful continuity, not process ceremony. Create only the artifacts
 that reduce ambiguity for the current task.
+
+This skill is the **contract** for structure, labels, verify/dedupe, Review,
+Triage, Capture, Promote, and shared scripts. Thin phase skills
+(`backlog-research`, `backlog-refine`, `backlog-plan`) own phase judgment for
+multi-agent runs. See `references/phase-skills.md` for the phase map and
+manual handoff packet.
 
 ## Core Structure
 
@@ -241,7 +249,8 @@ Treat these as likely duplicates or related work, not just exact title matches:
 - **Uncertain**: tell the user what matched and ask whether to extend the
   existing item or create a new one.
 
-After resolving overlap, proceed with Capture, Promote, Refine, or Plan.
+After resolving overlap, proceed with Capture, Promote, Research, Refine, or
+Plan (phase skills when running a dedicated multi-agent pass).
 
 ## Workflow
 
@@ -365,10 +374,9 @@ node scripts/backlog-issue-audit.mjs 123 --format json
 3. **Sort the remaining open issues into ready or needs-refinement.**
    - `status:ready`: scope, behavior, and acceptance criteria are clear; no
      unresolved product decisions. Eligible for Triage and execution.
-   - `status:unknown`: needs a refinement pass. Either resolve it now (clarify
-     scope, add acceptance criteria, attach a PRD via **Refine**) and relabel
-     `status:ready`, or leave it tagged `status:unknown` for a dedicated
-     refinement pass.
+   - `status:unknown`: needs research and/or refinement. Either resolve it now
+     (or via `backlog-research` / `backlog-refine`) and relabel `status:ready`,
+     or leave it tagged `status:unknown` for a dedicated phase pass.
    - `status:blocked`: confirm the blocker is still real. If it has been
      resolved, relabel; if not, ensure the blocker is linked in a comment so
      future agents can see what they are waiting on.
@@ -387,110 +395,39 @@ When choosing what to work on:
    local only if the user wants a tiny one-off task.
 5. Add or derive a slug if the task needs a PRD, plan, branch, or issue link.
 
+### Research
+
+When facts are missing for `status:unknown` work, prefer the
+`backlog-research` phase skill: audit the issue, gather evidence from code and
+related trackers, comment findings, and hand off to refine or block. Do not
+invent product decisions or write PRDs/plans in a research pass. See
+`references/phase-skills.md`.
+
 ### Refine
 
-Create a PRD only when the task benefits from product-level clarification.
-First run **Verify Before Add or Promote** so the PRD does not duplicate an
-existing issue, inbox item, or plan.
+When product clarity or acceptance criteria are needed, prefer the
+`backlog-refine` phase skill. First run **Verify Before Add or Promote**.
+Create a local PRD only when the task benefits from product-level
+clarification (user-facing feature, ambiguous behavior, multiple acceptance
+criteria, meaningful tradeoffs, or work likely to be resumed later). Skip PRDs
+for obvious fixes, small chores, and nitpicks.
 
-- user-facing feature
-- ambiguous behavior
-- multiple acceptance criteria
-- meaningful scope or tradeoffs
-- work likely to be resumed later
-
-Skip the PRD for obvious fixes, small chores, and nitpicks.
-
-PRD path:
-
-```text
-.backlog/prds/PRD-[slug].md
-```
-
-PRD template:
-
-```markdown
----
-slug: [slug]
-title: [title]
-status: draft
-issue: [GitHub issue URL or blank]
-created_at: [ISO-8601 timestamp]
----
-
-# [Title]
-
-## Problem
-
-## Goal
-
-## Requirements
-
-## Acceptance Criteria
-
-- [ ]
-
-## Out of Scope
-
-## Open Questions
-```
-
-Use statuses:
-
-- `draft`: useful but still being shaped
-- `ready`: clear enough to plan or implement
-- `blocked`: needs a human decision or external dependency
-- `done`: implemented or no longer needed
+For promoted work, put canonical scope and acceptance criteria on the GitHub
+Issue. Local PRDs at `.backlog/prds/PRD-[slug].md` are temporary drafting
+buffers; after promotion, delete them or keep a tiny pointer only if the user
+wants local traceability. Full refine procedure and PRD template live in
+`backlog-refine`.
 
 ### Plan
 
-Create a plan only when implementation needs sequencing. First run **Verify
-Before Add or Promote** so the plan does not duplicate existing tracked work.
+When implementation needs sequencing, prefer the `backlog-plan` phase skill.
+First run **Verify Before Add or Promote**. Create a plan only for multiple
+files/subsystems, migration/data/auth/payments/security/deployment risk,
+uncertain verification, or work an agent should execute later. Skip plans for
+obvious one-step changes.
 
-- multiple files or subsystems
-- migration, data, auth, payments, security, or deployment risk
-- uncertain tests or verification steps
-- work that an agent should execute later
-
-Plan path:
-
-```text
-.backlog/plans/PLAN-[slug].md
-```
-
-Plan template:
-
-```markdown
----
-slug: [slug]
-status: draft
-issue: [GitHub issue URL or blank]
-prd: [PRD path or blank]
-created_at: [ISO-8601 timestamp]
----
-
-# Plan: [Title]
-
-## Summary
-
-## Tasks
-
-- [ ] [Task with file paths and verification]
-
-## Verification
-
-## Risks
-
-## Notes
-```
-
-Use statuses:
-
-- `draft`: being planned
-- `ready`: clear enough to execute
-- `in_progress`: currently being implemented
-- `blocked`: cannot continue without input
-- `done`: implemented and verified
+Plans live at `.backlog/plans/PLAN-[slug].md` and may link a GitHub Issue.
+Full plan procedure and template live in `backlog-plan`.
 
 ### Execute
 

@@ -2,10 +2,18 @@
 
 This repository publishes installable skills.
 
-Install the backlog skill with:
+Install the backlog contract skill with:
 
 ```bash
 npx skills add mikemajara/skills --skill backlog
+```
+
+Optional phase skills for multi-agent workflows (install alongside `backlog`):
+
+```bash
+npx skills add mikemajara/skills --skill backlog-research
+npx skills add mikemajara/skills --skill backlog-refine
+npx skills add mikemajara/skills --skill backlog-plan
 ```
 
 Install the Todoist API skill with:
@@ -37,13 +45,27 @@ work:
 Use it when starting a project or when you want task work to be captured without
 turning the repository into a larger agent framework.
 
+`backlog` is the **contract** skill: layout, labels, verify/dedupe, Review,
+Triage, Capture, Promote, and shared scripts. For dedicated phase passes,
+prefer the thin skills:
+
+| Skill | Phase |
+| --- | --- |
+| `backlog-research` | Gather facts for thin/ambiguous issues |
+| `backlog-refine` | Product clarity and acceptance criteria |
+| `backlog-plan` | Implementation sequencing |
+
+See `skills/backlog/references/phase-skills.md` for the phase map and manual
+multi-agent handoff packet. Hook automation is deferred.
+
 Example prompts:
 
 ```text
 Use the backlog skill to initialize this project.
 Use the backlog skill to capture this task.
-Use the backlog skill to refine the next ready backlog item.
-Use the backlog skill to plan the auth cleanup task.
+Use backlog-research on issue #123.
+Use backlog-refine on the next status:unknown issue.
+Use backlog-plan for the auth cleanup task.
 ```
 
 The skill intentionally keeps the workflow lightweight:

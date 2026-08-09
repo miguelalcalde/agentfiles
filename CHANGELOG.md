@@ -4,6 +4,15 @@
 
 ### Added
 
+- Split multi-agent backlog phases into thin installable skills while keeping
+  `backlog` as the shared contract (layout, labels, verify/dedupe, Review,
+  Triage, Capture, Promote, scripts):
+  - `backlog-research`: fact-gathering for thin `status:unknown` work
+  - `backlog-refine`: product clarity / acceptance criteria (optional PRD draft)
+  - `backlog-plan`: implementation sequencing for non-trivial ready work
+- Added `skills/backlog/references/phase-skills.md` with the phase map, manual
+  multi-agent handoff packet, and deferred hook-automation notes (hooks are
+  not shipped yet).
 - Added `skills/backlog/scripts/backlog-setup.mjs`, an idempotent project setup
   helper that creates missing `.backlog/` scaffold files and upserts the
   canonical GitHub label set from `references/labels.json`.
@@ -23,6 +32,9 @@
 
 ### Changed
 
+- `backlog` Refine/Plan sections now point at `backlog-refine` and
+  `backlog-plan`; a Research step points at `backlog-research`. Templates and
+  detailed phase procedures live in the phase skills.
 - Tightened `todoist-api` to API reference only: removed TypeScript client
   helpers from references and replaced `implementation.md` with
   `api-semantics.md` (errors, field semantics, pagination, migration).
