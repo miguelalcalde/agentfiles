@@ -415,7 +415,9 @@ for obvious fixes, small chores, and nitpicks.
 For promoted work, put canonical scope and acceptance criteria on the GitHub
 Issue. Local PRDs at `.backlog/prds/PRD-[slug].md` are temporary drafting
 buffers; after promotion, delete them or keep a tiny pointer only if the user
-wants local traceability. Full refine procedure and PRD template live in
+wants local traceability. `backlog-refine` also runs Spec hardening (edge-case
+categories → defined behavior) before `status:ready` so agents are not left
+inventing failure behavior. Full procedure and template live in
 `backlog-refine`.
 
 ### Plan

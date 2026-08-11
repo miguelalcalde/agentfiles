@@ -19,7 +19,7 @@ npx skills add mikemajara/skills --skill backlog-plan
 | Skill | When | Writes | Done when |
 | --- | --- | --- | --- |
 | `backlog-research` | Facts missing for `status:unknown` work | Issue comment and/or `.backlog/memory.md` | Enough signal to refine or block |
-| `backlog-refine` | Product clarity / acceptance criteria needed | GitHub issue body (canonical); optional local PRD draft | `status:ready` or `status:blocked` |
+| `backlog-refine` | Product clarity / AC / agent-safe edge cases needed | GitHub issue body (canonical); optional local PRD draft; Spec hardening pass | `status:ready` or `status:blocked` |
 | `backlog-plan` | Implementation needs sequencing | `.backlog/plans/PLAN-[slug].md` | Plan `ready` with tasks, verification, risks |
 
 Natural order:

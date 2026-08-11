@@ -32,6 +32,11 @@
 
 ### Changed
 
+- `backlog-refine` now requires a Spec hardening pass before `status:ready`
+  (eight edge-case categories in fixed order, scenario → expected behavior →
+  AC / open question / out of scope). Trivial nits may skip with an explicit
+  note. Tightens the ready bar so agents are not left inventing stop/continue
+  or failure behavior from happy-path-only acceptance criteria.
 - `backlog` Refine/Plan sections now point at `backlog-refine` and
   `backlog-plan`; a Research step points at `backlog-research`. Templates and
   detailed phase procedures live in the phase skills.
