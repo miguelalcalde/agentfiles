@@ -40,9 +40,14 @@
     "description": "Work actively in progress"
   },
   {
+    "name": "status:needs-plan",
+    "color": "0075CA",
+    "description": "Refined and shaped; ready for an implementation plan"
+  },
+  {
     "name": "status:ready",
     "color": "0E8A16",
-    "description": "Clear enough to implement without unresolved product decisions"
+    "description": "Has an implementation plan (or plan skipped as trivial); ready to implement"
   },
   {
     "name": "status:blocked",

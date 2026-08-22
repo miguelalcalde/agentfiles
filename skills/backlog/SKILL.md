@@ -331,8 +331,8 @@ Use this GitHub label framework:
 
 - `type:feat`, `type:fix`, `type:nit`
 - `priority:high`, `priority:medium`, `priority:low`
-- `status:unknown`, `status:doing`, `status:ready`, `status:blocked`,
-  `status:duplicate`
+- `status:unknown`, `status:needs-plan`, `status:ready`, `status:doing`,
+  `status:blocked`, `status:duplicate`
 
 Use exactly one `type:*` label:
 
@@ -352,11 +352,14 @@ Use exactly one `status:*` label for promoted open issues:
 
 - `status:unknown`: default promoted state. Needs clarification, research,
   scoping, or acceptance criteria.
+- `status:needs-plan`: refined and shaped—goal, scope, and acceptance criteria
+  are clear. Ready for an implementation plan. Not yet implementable as a
+  planned unit.
+- `status:ready`: has an implementation plan (or plan explicitly skipped as
+  trivial). Ready to implement. Do not use for refined-but-unplanned work.
 - `status:doing`: work is actively in progress. Set this as the very first
   step when an agent or user picks up a task, before any code or refinement
   work. Remove it when the task is paused, blocked, completed, or handed off.
-- `status:ready`: clear enough to implement without unresolved product
-  decisions.
 - `status:blocked`: cannot proceed until a decision or dependency is resolved.
   Link the blocking issue or decision in the issue body or a comment.
 - `status:duplicate`: tracks the same outcome as another issue. Always paired
@@ -370,9 +373,9 @@ If any of these labels do not exist in the repository yet, create them with
 ### Review
 
 Run a Review when starting a session, picking up work, or cleansing the
-backlog. The order matters: in-progress work first, then dedupe, then split
-the rest into ready or needs-refinement. See **Querying GitHub** for the exact
-`gh` commands behind each step.
+backlog. The order matters: in-progress work first, then dedupe, then sort
+the rest into needs-plan, ready, or needs-refinement. See **Querying GitHub**
+for the exact `gh` commands behind each step.
 
 For token efficiency, start with the deterministic helper output:
 
@@ -401,18 +404,22 @@ node scripts/backlog-issue-audit.mjs 123 --format json
    comment `Duplicate of #N` pointing at the canonical issue, then close it.
    Use the **Overlap signals** rules above to judge close-but-not-identical
    cases.
-3. **Sort the remaining open issues into ready or needs-refinement.**
-   - `status:ready`: scope, behavior, and acceptance criteria are clear; no
-     unresolved product decisions. Eligible for Triage and execution.
+3. **Sort the remaining open issues into needs-plan, ready, or
+   needs-refinement.**
    - `status:unknown`: needs a refinement pass. Either resolve it now (clarify
      scope and acceptance criteria **in the issue** when one issue suffices, or
      draft a **PRD** via **Refine** only for multi-issue or ambiguous product
      scope—then promote shaped issues from the PRD without body dumps) and
-     relabel `status:ready`, or leave it tagged `status:unknown` for a
+     relabel `status:needs-plan`, or leave it tagged `status:unknown` for a
      dedicated refinement pass.
+   - `status:needs-plan`: refined and shaped; ready for an implementation plan.
+     Eligible for **Plan**. Not yet implementable.
+   - `status:ready`: has an implementation plan (or plan skipped as trivial).
+     Eligible for **Triage** and execution.
    - `status:blocked`: confirm the blocker is still real. If it has been
-     resolved, relabel; if not, ensure the blocker is linked in a comment so
-     future agents can see what they are waiting on.
+     resolved, relabel to the appropriate status (`status:unknown`,
+     `status:needs-plan`, or `status:ready`); if not, ensure the blocker is
+     linked in a comment so future agents can see what they are waiting on.
 
 Review does not pick what to work on next; that is **Triage**. Review only
 ensures the backlog reflects reality before any decision is made.
@@ -422,7 +429,9 @@ ensures the backlog reflects reality before any decision is made.
 When choosing what to work on:
 
 1. Prefer `high`, then `medium`, then `low`.
-2. Prefer unblocked, well-scoped tasks.
+2. Prefer unblocked, well-scoped tasks with `status:ready` (planned and
+   implementable). Issues tagged `status:needs-plan` need a plan first—route
+   them to **Plan**, not **Execute**.
 3. For promoted work, read the GitHub Issue first and treat it as canonical.
 4. For unpromoted inbox work, either promote it to a GitHub Issue or keep it
    local only if the user wants a tiny one-off task.
@@ -488,6 +497,10 @@ When the PRD is ready, use **Promote** to create shaped issue(s). Update
 `## Linked Issues` and frontmatter `issue` fields to point at them. Do not
 promote by copying this file into an issue body.
 
+After a successful refine—whether in the issue directly or via PRD promotion—
+relabel the shaped issue(s) to `status:needs-plan`. Do not use `status:ready`
+for refined-but-unplanned work.
+
 Use statuses:
 
 - `draft`: useful but still being shaped
@@ -496,6 +509,9 @@ Use statuses:
 - `done`: implemented or no longer needed
 
 ### Plan
+
+**Plan** consumes issues tagged `status:needs-plan`. After writing a plan (or
+explicitly skipping one for trivial work), relabel the issue to `status:ready`.
 
 Create a plan only when **a specific issue** (or small linked set) needs
 implementation sequencing. First run **Verify Before Add or Promote** so the plan
@@ -558,12 +574,14 @@ Use statuses:
 
 When implementing from the backlog:
 
-1. Read the relevant GitHub Issue or inbox item, plus any PRD and plan.
-2. Keep edits scoped to the task.
-3. Update the plan checklist if a plan exists.
-4. Update GitHub Issue status through normal GitHub workflow when the work is
+1. Confirm the issue has `status:ready` (planned or plan skipped as trivial).
+   Do not start implementation on `status:needs-plan` issues—plan first.
+2. Read the relevant GitHub Issue or inbox item, plus any PRD and plan.
+3. Keep edits scoped to the task.
+4. Update the plan checklist if a plan exists.
+5. Update GitHub Issue status through normal GitHub workflow when the work is
    promoted.
-5. Add durable decisions, blockers, or gotchas to `.backlog/memory.md`.
+6. Add durable decisions, blockers, or gotchas to `.backlog/memory.md`.
 
 Do not create PRDs or plans retroactively unless they would help future work.
 
@@ -617,8 +635,9 @@ gh label create "priority:high"      --color "B60205" --description "Important s
 gh label create "priority:medium"    --color "FBCA04" --description "Valuable but not urgent"
 gh label create "priority:low"       --color "0E8A16" --description "Nice-to-have, opportunistic"
 gh label create "status:unknown"     --color "D4C5F9" --description "Needs scoping or acceptance criteria"
+gh label create "status:needs-plan"  --color "0075CA" --description "Refined and shaped; ready for an implementation plan"
+gh label create "status:ready"       --color "0E8A16" --description "Has an implementation plan (or plan skipped as trivial); ready to implement"
 gh label create "status:doing"       --color "FBCA04" --description "Work actively in progress"
-gh label create "status:ready"       --color "0E8A16" --description "Clear enough to implement"
 gh label create "status:blocked"     --color "5319E7" --description "Waiting on a decision or dependency"
 gh label create "status:duplicate"   --color "CFD3D7" --description "Tracks the same outcome as another issue"
 ```
@@ -641,17 +660,30 @@ gh issue view 123
 Mark and close a duplicate against the canonical issue:
 
 ```bash
-gh issue edit 123 --add-label "status:duplicate" --remove-label "status:unknown,status:ready,status:doing,status:blocked"
+gh issue edit 123 --add-label "status:duplicate" --remove-label "status:unknown,status:needs-plan,status:ready,status:doing,status:blocked"
 gh issue comment 123 --body "Duplicate of #456"
 gh issue close 123 --reason "not planned"
 ```
 
-**Review step 3 — ready vs needs-refinement queues:**
+**Review step 3 — needs-plan, ready, and needs-refinement queues:**
 
 ```bash
-gh issue list --state open --label "status:ready"   --limit 50
-gh issue list --state open --label "status:unknown" --limit 50
-gh issue list --state open --label "status:blocked" --limit 50
+gh issue list --state open --label "status:needs-plan" --limit 50
+gh issue list --state open --label "status:ready"      --limit 50
+gh issue list --state open --label "status:unknown"    --limit 50
+gh issue list --state open --label "status:blocked"    --limit 50
+```
+
+**After refine — move shaped issue to needs-plan:**
+
+```bash
+gh issue edit 123 --remove-label "status:unknown" --add-label "status:needs-plan"
+```
+
+**After plan — move issue to ready (or skip plan for trivial work):**
+
+```bash
+gh issue edit 123 --remove-label "status:needs-plan" --add-label "status:ready"
 ```
 
 Filter the ready queue by priority for Triage:
@@ -664,7 +696,7 @@ gh issue list --state open --label "status:ready,priority:medium" --limit 50
 **Pick up a task (set `status:doing` as the first action):**
 
 ```bash
-gh issue edit 123 --remove-label "status:ready,status:unknown" --add-label "status:doing"
+gh issue edit 123 --remove-label "status:ready,status:needs-plan,status:unknown" --add-label "status:doing"
 ```
 
 **Hand off, finish, or pause a task:**

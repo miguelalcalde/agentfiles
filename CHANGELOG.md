@@ -12,6 +12,17 @@
 
 ### Changed
 
+- Backlog status pipeline: added `status:needs-plan` for refined-but-unplanned
+  issues; `status:ready` now means has an implementation plan (or plan skipped
+  as trivial) and is ready to implement—not refined-but-unplanned.
+
+### Migration Notes
+
+Projects using the old `status:ready` meaning ("refined, clear enough to
+implement") should retag refined-but-unplanned issues to `status:needs-plan`.
+`status:ready` now means planned and implementable. Rerun
+`backlog-setup.mjs` to upsert the new label definition.
+
 - Clarified `backlog` artifact roles: GitHub Issues are implementable units;
   PRDs are product umbrellas that link to shaped issues (not issue body dumps);
   plans are per-issue sequencing with an explicit reference-only rule for

@@ -15,8 +15,9 @@ export const PRIORITY_LABELS = [
 ];
 export const STATUS_LABELS = [
   "status:unknown",
-  "status:doing",
+  "status:needs-plan",
   "status:ready",
+  "status:doing",
   "status:blocked",
   "status:duplicate",
 ];
