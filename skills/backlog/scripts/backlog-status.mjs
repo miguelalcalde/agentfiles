@@ -56,9 +56,7 @@ function checkScaffold(backlogDirPath) {
   for (const path of [
     backlogDirPath,
     join(backlogDirPath, "inbox.md"),
-    join(backlogDirPath, "issues.md"),
     join(backlogDirPath, "memory.md"),
-    join(backlogDirPath, "prds"),
     join(backlogDirPath, "plans"),
   ]) {
     if (existsSync(path)) {
@@ -94,23 +92,16 @@ function checkIssuesSnapshot(backlogDirPath, staleDays) {
 }
 
 function checkLocalArtifacts(backlogDirPath) {
-  for (const path of markdownFiles(join(backlogDirPath, "prds"))) {
-    const text = readFileSync(path, "utf8");
-    if (!/^---\n[\s\S]*?\n---/.test(text)) {
-      warnings.push(`${toProjectRelative(path)} is missing frontmatter`);
-    }
-    if (/status:\s*promoted\b/.test(text) && !/issue:\s*\S+/.test(text)) {
-      problems.push(`${toProjectRelative(path)} is promoted but missing issue link`);
-    }
-  }
-
   for (const path of markdownFiles(join(backlogDirPath, "plans"))) {
     const text = readFileSync(path, "utf8");
     if (!/^---\n[\s\S]*?\n---/.test(text)) {
       warnings.push(`${toProjectRelative(path)} is missing frontmatter`);
     }
-    if (!/^## Verification\b/m.test(text)) {
-      warnings.push(`${toProjectRelative(path)} is missing a Verification section`);
+    if (
+      /status:\s*promoted\b/.test(text) &&
+      !/issue:\s*\S+/.test(text)
+    ) {
+      problems.push(`${toProjectRelative(path)} is promoted but missing issue link`);
     }
   }
 }

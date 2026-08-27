@@ -30,9 +30,29 @@
     "description": "Nice-to-have, opportunistic, or exploratory"
   },
   {
-    "name": "status:unknown",
+    "name": "phase:research",
+    "color": "C5DEF5",
+    "description": "Facts are thin; research before shaping a plan"
+  },
+  {
+    "name": "phase:refine",
     "color": "D4C5F9",
-    "description": "Needs clarification, research, scoping, or acceptance criteria"
+    "description": "Shape the product plan until it is done"
+  },
+  {
+    "name": "phase:implement",
+    "color": "0E8A16",
+    "description": "Plan is done or skipped; ready to make the change"
+  },
+  {
+    "name": "phase:qa",
+    "color": "0075CA",
+    "description": "Change exists; judge it against the plan"
+  },
+  {
+    "name": "status:open",
+    "color": "C2E0C6",
+    "description": "Available; not claimed"
   },
   {
     "name": "status:doing",
@@ -40,14 +60,9 @@
     "description": "Work actively in progress"
   },
   {
-    "name": "status:ready",
-    "color": "0E8A16",
-    "description": "Clear enough to implement without unresolved product decisions"
-  },
-  {
     "name": "status:blocked",
     "color": "5319E7",
-    "description": "Cannot proceed until a decision or dependency is resolved"
+    "description": "Waiting on a human decision or dependency"
   },
   {
     "name": "status:duplicate",

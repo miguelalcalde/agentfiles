@@ -4,6 +4,41 @@
 
 ### Added
 
+- Backlog skill **v2.0.0** (label schema **3**): `phase:research`,
+  `phase:refine`, `phase:implement`, `phase:qa` plus `status:open`,
+  `status:doing`, `status:blocked`, `status:duplicate`. Version in
+  `SKILL.md` frontmatter and `references/version.json`.
+- On-demand references: workflow, research, plan (product spec + done-when),
+  refine, qa, drift, and GitHub/`gh` helpers.
+- `backlog-setup.mjs --check` prints skill version and `label_schema`.
+
+### Changed
+
+- `SKILL.md` is a router: how to proceed on an issue. `gh` recipes moved to
+  `references/github.md`.
+- A **plan** is the product spec for one issue (former PRD). No implementation
+  sequencing artifact. Writing the plan is refine (`phase:refine`).
+- Default `.backlog/` scaffold is `inbox.md`, `plans/`, `memory.md` (no `prds/`).
+- Setup no longer creates `prds/`. Existing `prds/` is reported as legacy.
+
+### Migration Notes
+
+Label mapping for existing issues:
+
+1. `status:unknown` → `phase:refine` + `status:open`
+2. `status:ready` → `phase:implement` + `status:open`
+3. `status:needs-plan` → `phase:refine` + `status:open`
+4. Keep `status:doing`, `status:blocked`, `status:duplicate` as status only
+   (add a `phase:*` if missing).
+5. Rerun `backlog-setup.mjs` to stamp new labels. Legacy labels are not deleted.
+6. Fold `.backlog/prds/` into issue bodies or `plans/`; treat old implementation
+   PLAN files as obsolete.
+
+The important invariant is: if an item has an issue, the issue owns status
+and phase.
+
+### Added
+
 - `backlog-setup.mjs` now injects a marked agent hint into `AGENTS.md` and/or
   `CLAUDE.md` (creating `AGENTS.md` when neither exists) so agents read
   `.backlog/memory.md` and check the inbox before starting work. Use

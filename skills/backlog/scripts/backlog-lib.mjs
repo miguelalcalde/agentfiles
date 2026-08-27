@@ -13,17 +13,30 @@ export const PRIORITY_LABELS = [
   "priority:medium",
   "priority:low",
 ];
+export const PHASE_LABELS = [
+  "phase:research",
+  "phase:refine",
+  "phase:implement",
+  "phase:qa",
+];
+
 export const STATUS_LABELS = [
-  "status:unknown",
+  "status:open",
   "status:doing",
-  "status:ready",
   "status:blocked",
   "status:duplicate",
+];
+
+export const LEGACY_STATUS_LABELS = [
+  "status:unknown",
+  "status:ready",
+  "status:needs-plan",
 ];
 
 export const CANONICAL_LABELS = [
   ...TYPE_LABELS,
   ...PRIORITY_LABELS,
+  ...PHASE_LABELS,
   ...STATUS_LABELS,
 ];
 
@@ -248,7 +261,10 @@ export function analyzeIssue(issue, { staleDays = 30 } = {}) {
   const typeLabels = labels.filter((label) => TYPE_LABELS.includes(label));
   const priorityLabels = labels.filter((label) => PRIORITY_LABELS.includes(label));
   const statusLabels = labels.filter((label) => STATUS_LABELS.includes(label));
-  const statusUnknown = statusLabels.includes("status:unknown");
+  const phaseLabels = labels.filter((label) => PHASE_LABELS.includes(label));
+  const legacyStatus = labels.filter((label) =>
+    LEGACY_STATUS_LABELS.includes(label),
+  );
   const body = issue.body || "";
 
   if (typeLabels.length === 0) {
@@ -267,13 +283,26 @@ export function analyzeIssue(issue, { staleDays = 30 } = {}) {
     reasons.push(`multiple status labels: ${statusLabels.join(", ")}`);
   }
 
-  if (statusUnknown) {
-    reasons.push("status:unknown");
+  if (phaseLabels.length === 0) {
+    reasons.push("missing phase label");
+  } else if (phaseLabels.length > 1) {
+    reasons.push(`multiple phase labels: ${phaseLabels.join(", ")}`);
+  }
+
+  if (legacyStatus.length > 0) {
+    reasons.push(`legacy status label: ${legacyStatus.join(", ")}`);
+  }
+
+  if (phaseLabels.includes("phase:research") || phaseLabels.includes("phase:refine")) {
+    reasons.push(phaseLabels[0]);
   }
 
   if (!body.trim()) {
     reasons.push("empty issue body");
-  } else if (!hasAcceptanceCriteria(body)) {
+  } else if (
+    !hasAcceptanceCriteria(body) &&
+    !typeLabels.includes("type:nit")
+  ) {
     reasons.push("missing acceptance criteria");
   }
 
@@ -285,6 +314,7 @@ export function analyzeIssue(issue, { staleDays = 30 } = {}) {
     labels,
     priority: priorityLabels[0] || "",
     reasons,
+    phase: phaseLabels[0] || "",
     status: statusLabels[0] || "",
     type: typeLabels[0] || "",
   };
@@ -353,8 +383,8 @@ export function collectLocalArtifacts(backlogDir = ".backlog") {
   const artifacts = [];
 
   addInboxArtifacts(artifacts, root);
-  addFileArtifacts(artifacts, root, "prds", "prd");
   addFileArtifacts(artifacts, root, "plans", "plan");
+  addFileArtifacts(artifacts, root, "prds", "prd");
 
   const issuesPath = join(root, "issues.md");
   if (existsSync(issuesPath)) {

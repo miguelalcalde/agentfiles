@@ -33,6 +33,10 @@ const labels = loadLabels();
 const agentHint = loadAgentHint();
 
 if (options.check) {
+  const version = loadVersion();
+  console.log(
+    `backlog skill ${version.version} (label_schema ${version.label_schema})`,
+  );
   const problems = runCheck({
     backlogDir,
     repo,
@@ -164,6 +168,11 @@ function loadLabels() {
   return JSON.parse(readFileSync(labelsPath, "utf8"));
 }
 
+function loadVersion() {
+  const versionPath = join(SKILL_ROOT, "references", "version.json");
+  return JSON.parse(readFileSync(versionPath, "utf8"));
+}
+
 function loadAgentHint() {
   return readFileSync(join(SKILL_ROOT, "assets", "agent-hint.md"), "utf8")
     .trimEnd()
@@ -236,14 +245,12 @@ function requiredScaffoldPaths(backlogDir) {
     backlogDir,
     join(backlogDir, "inbox.md"),
     join(backlogDir, "memory.md"),
-    join(backlogDir, "prds"),
     join(backlogDir, "plans"),
   ];
 }
 
 function ensureScaffold(backlogDir, dryRun) {
   mkdirIfMissing(backlogDir, dryRun);
-  mkdirIfMissing(join(backlogDir, "prds"), dryRun);
   mkdirIfMissing(join(backlogDir, "plans"), dryRun);
 
   copyIfMissing(
@@ -385,6 +392,7 @@ function reportLegacyArtifacts(backlogDir) {
     join(backlogDir, "backlog.md"),
     join(backlogDir, "issues.md"),
     join(backlogDir, "notes.md"),
+    join(backlogDir, "prds"),
   ];
 
   for (const legacyPath of legacyPaths) {
