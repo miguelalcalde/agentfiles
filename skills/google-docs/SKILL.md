@@ -7,8 +7,7 @@ description: >-
 ---
 # Google Docs
 
-Thin operating rules for Google Docs across harnesses. Do **not** hard-code a
-connector, MCP server, or auth path — use the Docs tools available in this
+Thin operating rules for Google Docs across harnesses. Use the Docs tools available in this
 session.
 
 ## Defaults
