@@ -5,6 +5,8 @@ This repository publishes installable skills.
 ```bash
 npx skills add mikemajara/skills --skill backlog
 npx skills add mikemajara/skills --skill sdlc-first-principles
+npx skills add mikemajara/skills --skill conversation
+npx skills add mikemajara/skills --skill google-docs
 ```
 
 ## backlog
@@ -48,3 +50,14 @@ The `sdlc-first-principles` skill applies Elon Musk's five-step process
 improvement algorithm to software delivery: challenge requirements, delete
 unnecessary work, simplify what remains, accelerate cycle time, and automate
 last.
+
+## conversation
+
+Open-ended discovery dialogue before planning or building. Use when the user
+asks to explore, interview, or think something through together.
+
+## google-docs
+
+Thin, connector-agnostic operating rules for Google Docs: create, format,
+edit, comments, suggestions, and review. Draft in Markdown; use whatever Docs
+tools the harness exposes — do not hard-code a connector.
