@@ -4,6 +4,9 @@
 
 ### Added
 
+- `voice-miguel`: opt-in multi-register voice (email, Slack/messaging,
+  blog/essay, short summary). `disable-model-invocation: true`.
+
 - `google-docs`: connector-agnostic create/format/edit/comment/suggest/review
   rules; Markdown draft default; no connector lock-in.
 
