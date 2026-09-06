@@ -42,9 +42,7 @@ Keep formatting light. Do not decorate for its own sake.
 ## Edit
 
 - Prefer editing the existing Doc the user pointed at over creating a duplicate.
-- Preserve human-written content you were not asked to change.
-- For shared Docs you do not own, prefer **suggesting** over silent overwrite
-  when the tools support suggestion mode.
+- Preserve written content you were not asked to change.
 
 ## Comments and suggestions
 
@@ -62,9 +60,3 @@ When asked to review a Doc:
 1. Read the current Doc (not a stale local copy).
 2. Check structure, clarity, and whether it matches the brief.
 3. Leave comments or suggestions; summarize the top issues in chat.
-
-## Out of scope
-
-- Connector install, OAuth, or Composio/MCP setup — harness concern, not this
-  skill.
-- Spreadsheets, Slides, or Drive file ops beyond what the Doc task needs.
