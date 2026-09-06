@@ -7,6 +7,7 @@ npx skills add mikemajara/skills --skill backlog
 npx skills add mikemajara/skills --skill sdlc-first-principles
 npx skills add mikemajara/skills --skill conversation
 npx skills add mikemajara/skills --skill google-docs
+npx skills add mikemajara/skills --skill voice-miguel
 ```
 
 ## backlog
@@ -61,3 +62,10 @@ asks to explore, interview, or think something through together.
 Thin, connector-agnostic operating rules for Google Docs: create, format,
 edit, comments, suggestions, and review. Draft in Markdown; use whatever Docs
 tools the harness exposes — do not hard-code a connector.
+
+## voice-miguel
+
+Opt-in voice skill for Miguel Alcalde (`disable-model-invocation: true`).
+One thin skill with registers for email, Slack/messaging, blog/essay, and
+short summaries. Invoke with "voice-miguel" / "in my voice" — never apply by
+default.
