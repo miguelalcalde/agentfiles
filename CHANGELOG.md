@@ -4,6 +4,9 @@
 
 ### Added
 
+- `google-docs`: connector-agnostic create/format/edit/comment/suggest/review
+  rules; Markdown draft default; no connector lock-in.
+
 - Backlog skill **v2.0.0** (label schema **3**): `phase:research`,
   `phase:refine`, `phase:implement`, `phase:qa` plus `status:open`,
   `status:doing`, `status:blocked`, `status:duplicate`. Version in
