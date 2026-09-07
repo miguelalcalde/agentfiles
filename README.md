@@ -6,6 +6,7 @@ This repository publishes installable skills.
 npx skills add mikemajara/skills --skill backlog
 npx skills add mikemajara/skills --skill sdlc-first-principles
 npx skills add mikemajara/skills --skill conversation
+npx skills add mikemajara/skills --skill brainstorm
 npx skills add mikemajara/skills --skill google-docs
 npx skills add mikemajara/skills --skill voice-miguel
 ```
@@ -54,8 +55,29 @@ last.
 
 ## conversation
 
-Open-ended discovery dialogue before planning or building. Use when the user
-asks to explore, interview, or think something through together.
+Use `conversation` when the idea is already mostly formed. The agent
+pressure-tests it with you: gaps, contradictions, missing constraints, and
+edge cases. It does not invent a new direction or dump an option catalog.
+
+Example prompts:
+
+```text
+Think this through with me — what am I missing?
+Pressure-test this plan before I build it.
+```
+
+## brainstorm
+
+Use `brainstorm` when you want new angles. The agent generates options,
+including unconventional ones, and follows what lands. It does not audit a
+plan you already have.
+
+Example prompts:
+
+```text
+Brainstorm this with me.
+Give me more creative directions for this idea.
+```
 
 ## google-docs
 

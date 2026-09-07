@@ -4,6 +4,12 @@
 
 ### Added
 
+- Rewrote `conversation` as a gap-check for a mostly formed idea: find
+  missing constraints, contradictions, and edge cases without inventing a
+  new direction.
+- Added `brainstorm`, a generative skill for new angles and option catalogs.
+  Handoff to `conversation` when an idea is picked and needs pressure-testing.
+
 - `voice-miguel`: opt-in multi-register voice (email, Slack/messaging,
   blog/essay, short summary). `disable-model-invocation: true`.
 

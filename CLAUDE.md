@@ -7,6 +7,8 @@ This repository publishes installable skills.
 ```bash
 npx skills add mikemajara/skills --skill backlog
 npx skills add mikemajara/skills --skill sdlc-first-principles
+npx skills add mikemajara/skills --skill conversation
+npx skills add mikemajara/skills --skill brainstorm
 ```
 
 Keep the repository focused on small, self-contained skills. Do not reintroduce
@@ -25,6 +27,8 @@ skills/backlog/assets/
 skills/backlog/references/
 skills/backlog/scripts/
 skills/sdlc-first-principles/SKILL.md
+skills/conversation/SKILL.md
+skills/brainstorm/SKILL.md
 ```
 
 `backlog` is one skill. Phase depth lives in `references/` and is read on demand.
