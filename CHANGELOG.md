@@ -4,6 +4,14 @@
 
 ### Added
 
+- `backlog`: coding-agents long-term memory flow — promote conventions /
+  gotchas / critical decisions from `.backlog/memory.md` into `AGENTS.md`
+  (`references/long-term-memory.md`); prune memory after promote; on
+  `memory.md` merge conflicts keep all entries. Triggers: consolidate backlog
+  memory / promote to AGENTS / work on long-term memory.
+
+### Added
+
 - `nightly-learn`: periodic memory→skill consolidation (per-agent routine;
   harness-agnostic; HITL for shared skill rewrites).
 
