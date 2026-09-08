@@ -4,6 +4,9 @@
 
 ### Added
 
+- `nightly-learn`: periodic memory→skill consolidation (per-agent routine;
+  harness-agnostic; HITL for shared skill rewrites).
+
 - Rewrote `conversation` as a gap-check for a mostly formed idea: find
   missing constraints, contradictions, and edge cases without inventing a
   new direction.
