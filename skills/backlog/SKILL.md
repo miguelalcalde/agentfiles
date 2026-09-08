@@ -5,8 +5,9 @@ description: |
   Lightweight project backlog: capture work, keep issues honest, and move them
   through research, refine, implement, and qa. Use when initializing `.backlog/`,
   capturing or promoting ideas, reviewing or triaging issues, refining a product
-  plan, or checking what to do next on an issue. Default source of truth is
-  GitHub Issues. Read references only for the current action.
+  plan, checking what to do next on an issue, or consolidating `.backlog/memory.md`
+  into `AGENTS.md` (coding agents). Default source of truth is GitHub Issues.
+  Read references only for the current action.
 ---
 
 # Backlog
@@ -34,7 +35,7 @@ Do not change `phase:*` unless that phase actually finished.
 .backlog/
   inbox.md      # optional local scratch; the issue is the real inbox
   plans/        # product plans only, when the issue body is not enough
-  memory.md     # durable decisions, blockers, conventions, gotchas
+  memory.md     # transactional project log (decisions, facts, choices, gotchas)
 ```
 
 | Artifact | Role |
@@ -43,6 +44,8 @@ Do not change `phase:*` unless that phase actually finished.
 | **Plan** | Product spec for that issue: problem, goal, in/out, AC. **No** files, APIs, or task order. |
 | **Research brief** | Facts and questions before a plan. Not AC. Lives as an issue comment (file optional). |
 | **Inbox** | Optional local line items until promoted. |
+| **memory.md** | Transactional log for the repo. Promote lasting guidance into `AGENTS.md` — see `references/long-term-memory.md`. |
+| **AGENTS.md** | Project soul for coding agents (outside `.backlog/`). |
 
 Writing the plan **is refine**. If the work is too big, split into more issues. Do not keep a separate implementation-plan document.
 
@@ -87,6 +90,7 @@ Read only what the current action needs (one level from this file):
 | `phase:qa` | `references/qa.md` |
 | Labels look wrong | `references/drift.md` |
 | Tracker is GitHub (`gh`, scripts) | `references/github.md` |
+| Consolidate memory → `AGENTS.md` | `references/long-term-memory.md` |
 
 ## Capture and promote
 
@@ -109,7 +113,16 @@ Review does not pick the next task; triage does.
 1. Read the issue (canonical) and the plan if one exists.
 2. Keep the change inside that product scope. Do not invent behavior the plan left open — send back to `phase:refine` or `status:blocked`.
 3. When a reviewable change exists, set `phase:qa` and `status:open` (clear `doing`).
-4. Record durable gotchas in `.backlog/memory.md`.
+4. Record durable decisions, facts, choices, and gotchas in `.backlog/memory.md`
+   (transactional log — see `references/long-term-memory.md`).
+
+## Long-term memory (coding agents)
+
+When the user asks to consolidate backlog memory, promote to AGENTS, or work on
+long-term memory, follow `references/long-term-memory.md`: move lasting
+conventions / gotchas / critical decisions from `.backlog/memory.md` into
+`AGENTS.md`, then prune memory. On merge conflicts in `memory.md`, keep all
+entries.
 
 ## Setup
 
@@ -136,3 +149,4 @@ Setup does not delete legacy labels. Rerun setup to stamp schema 3 names.
 - Never let a local markdown file override issue labels.
 - When blocked, write the blocker on the issue.
 - Preserve human-written memory.
+- `.backlog/memory.md` is a log: on merge conflict, keep all changes (never drop entries).
