@@ -9,6 +9,7 @@ npx skills add mikemajara/skills --skill conversation
 npx skills add mikemajara/skills --skill brainstorm
 npx skills add mikemajara/skills --skill google-docs
 npx skills add mikemajara/skills --skill voice-miguel
+npx skills add mikemajara/skills --skill nightly-learn
 ```
 
 ## backlog
@@ -91,3 +92,9 @@ Opt-in voice skill for Miguel Alcalde (`disable-model-invocation: true`).
 One thin skill with registers for email, Slack/messaging, blog/essay, and
 short summaries. Invoke with "voice-miguel" / "in my voice" — never apply by
 default.
+
+## nightly-learn
+
+Periodic (e.g. nightly) consolidation: promote sticky how-to facts from an
+agent's **own** memory into skills (or skill patches). Harness-agnostic;
+schedule is a per-agent routine. HITL before rewriting shared upstream skills.
