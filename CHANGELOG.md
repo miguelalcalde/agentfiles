@@ -4,6 +4,9 @@
 
 ### Added
 
+- `issue-kickoff`: thin Cursor kickoff for already-ready GitHub issues (`@cursor`
+  first token, kickoff body shape, PR handoff). Readiness stays in `backlog`.
+
 - `backlog`: coding-agents long-term memory flow — promote conventions /
   gotchas / critical decisions from `.backlog/memory.md` into `AGENTS.md`
   (`references/long-term-memory.md`); prune memory after promote; on
