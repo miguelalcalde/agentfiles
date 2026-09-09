@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed
+
+- `backlog` `references/qa.md`: real PR judgment — PASS does not merge/close;
+  repo allowlist; find change (Fixes #N / linked / search); verdict + review on
+  the PR; depth (AC + touched regressions; prefer suite/CLI, browser needs HITL);
+  HITL rules for merge-ready and product calls.
+
 ### Added
 
 - `backlog`: coding-agents long-term memory flow — promote conventions /
