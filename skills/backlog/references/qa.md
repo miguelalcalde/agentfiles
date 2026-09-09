@@ -98,17 +98,17 @@ with reason on the issue.
 
 1. Confirm repo is allowlisted (list above), or the human explicitly authorized
    you. Else BLOCKED + ping.
-2. Claim `status:qa`.
+2. Claim `status:doing` (while `phase:qa`).
 3. Find the change (section above). Else BLOCKED.
 4. Read the issue (canonical plan) and the change (diff; preview if available).
 5. Check AC and in/out of scope at the depth above.
 6. Verdict on the PR (template). Submit the matching PR review action above.
 7. **PASS** — leave issue open at `phase:qa` (or project "ready to merge"
-   convention); clear claim → `status:open`; **do not** close or merge;
+   convention); clear `doing` → `status:open`; **do not** close or merge;
    ping human that it is merge-ready.
-8. **FAIL (bug in the change)** — `phase:implement` + `status:open`; clear claim → `status:open`.
+8. **FAIL (bug in the change)** — `phase:implement` + `status:open`; clear `doing`.
 9. **Plan wrong / product hole** — `phase:refine` + `status:open` (or `blocked`);
-   clear claim → `status:open`.
+   clear `doing`.
 10. **BLOCKED** — comment + ping as needed; `status:blocked` when waiting on human.
 
 ## Done when
